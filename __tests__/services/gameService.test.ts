@@ -17,7 +17,7 @@ describe('gameService', () => {
 
       it('should fetch playoff games (seasonType 3)', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               season: { year: 2025, type: 3 },
@@ -58,7 +58,7 @@ describe('gameService', () => {
 
       it('should handle indoor/outdoor venue detection', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [
@@ -85,7 +85,7 @@ describe('gameService', () => {
       it('should determine game status (pre/in/post)', async () => {
         // Test pre-game status
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -106,7 +106,7 @@ describe('gameService', () => {
 
         // Test live game status
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -132,7 +132,7 @@ describe('gameService', () => {
 
         // Test post-game status
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -167,7 +167,7 @@ describe('gameService', () => {
 
       it('should handle games with ties in record', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -196,7 +196,7 @@ describe('gameService', () => {
     describe('Edge Cases', () => {
       it('should handle empty games array', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: []
@@ -212,7 +212,7 @@ describe('gameService', () => {
 
       it('should handle missing weather data', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -235,7 +235,7 @@ describe('gameService', () => {
 
       it('should handle missing broadcast data', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -256,7 +256,7 @@ describe('gameService', () => {
 
       it('should handle missing team colors', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({
               ...mockScoreboardResponse,
               events: [{
@@ -291,7 +291,7 @@ describe('gameService', () => {
     describe('Error Cases', () => {
       it('should handle ESPN API 404 error', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({ error: 'Not Found' }, { status: 404 });
           })
         );
@@ -304,7 +304,7 @@ describe('gameService', () => {
 
       it('should handle ESPN API 500 error', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 });
           })
         );
@@ -316,7 +316,7 @@ describe('gameService', () => {
 
       it('should handle malformed JSON response', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.text('This is not JSON');
           })
         );
@@ -328,7 +328,7 @@ describe('gameService', () => {
 
       it('should handle network timeout', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', () => {
             return HttpResponse.error();
           })
         );
@@ -382,7 +382,7 @@ describe('gameService', () => {
     describe('Edge Cases', () => {
       it('should return null for game not found', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
             return HttpResponse.json({ error: 'Game not found' }, { status: 404 });
           })
         );
@@ -394,7 +394,7 @@ describe('gameService', () => {
 
       it('should handle missing boxscore data', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
             return HttpResponse.json({
               boxscore: undefined,
               scoringPlays: [],
@@ -412,7 +412,7 @@ describe('gameService', () => {
 
       it('should handle missing stat leaders', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
             return HttpResponse.json({
               boxscore: {},
               scoringPlays: [],
@@ -431,7 +431,7 @@ describe('gameService', () => {
     describe('Error Cases', () => {
       it('should return null on network error', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
+          http.get('https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary', () => {
             return HttpResponse.error();
           })
         );

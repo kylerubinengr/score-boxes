@@ -320,11 +320,11 @@ async function getGameSummary(gameId: string): Promise<{ matchupStats: MatchupSt
     const homeComp = data.header?.competitions?.[0]?.competitors?.find((c:any) => c.homeAway === 'home');
     const awayComp = data.header?.competitions?.[0]?.competitors?.find((c:any) => c.homeAway === 'away');
     
-    const homeBox = data.boxscore?.players?.find((p:any) => p.team.id === homeComp?.id);
-    const awayBox = data.boxscore?.players?.find((p:any) => p.team.id === awayComp?.id);
+    const homeBox = data.boxscore?.players?.find((p:any) => p.team?.id === homeComp?.id);
+    const awayBox = data.boxscore?.players?.find((p:any) => p.team?.id === awayComp?.id);
 
-    const homeTeamLeaders = data.leaders.find((l: any) => l.team.id === homeComp?.id);
-    const awayTeamLeaders = data.leaders.find((l: any) => l.team.id === awayComp?.id);
+    const homeTeamLeaders = data.leaders.find((l: any) => l.team?.id === homeComp?.id);
+    const awayTeamLeaders = data.leaders.find((l: any) => l.team?.id === awayComp?.id);
 
     const homeStats = { ...parseTeamLeaders(homeTeamLeaders), boxscore: parseBoxScore(homeBox ? { players: homeBox.statistics } : undefined) };
     const awayStats = { ...parseTeamLeaders(awayTeamLeaders), boxscore: parseBoxScore(awayBox ? { players: awayBox.statistics } : undefined) };

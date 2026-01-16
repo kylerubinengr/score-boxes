@@ -58,7 +58,7 @@ function getMockPlayoffPicture(): PlayoffPicture {
 
 
 export async function getPlayoffPicture(year: number = 2025): Promise<PlayoffPicture | null> {
-  const url = `http://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=${year}`;
+  const url = `https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=${year}`;
   
   try {
     const res = await fetch(url, { next: { revalidate: 60 } });

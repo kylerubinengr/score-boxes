@@ -349,6 +349,128 @@ export const mockPlayoffTeamsAFC: PlayoffTeam[] = [
   }
 ];
 
+export const mockPlayoffTeamsNFC: PlayoffTeam[] = [
+  {
+    id: "26",
+    name: "Seattle Seahawks",
+    abbreviation: "SEA",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+    seed: 1,
+    record: "13-2",
+    wins: 13,
+    losses: 2,
+    ties: 0,
+    pointsFor: 432,
+    pointsAgainst: 298,
+    differential: 134,
+    streak: "W5",
+    winPercentage: 0.867,
+    clinchStatus: "CLINCHED_HOMEFIELD"
+  },
+  {
+    id: "3",
+    name: "Chicago Bears",
+    abbreviation: "CHI",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png",
+    seed: 2,
+    record: "12-3",
+    wins: 12,
+    losses: 3,
+    ties: 0,
+    pointsFor: 385,
+    pointsAgainst: 312,
+    differential: 73,
+    streak: "W2",
+    winPercentage: 0.800,
+    clinchStatus: "CLINCHED_DIVISION"
+  },
+  {
+    id: "21",
+    name: "Philadelphia Eagles",
+    abbreviation: "PHI",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+    seed: 3,
+    record: "11-4",
+    wins: 11,
+    losses: 4,
+    ties: 0,
+    pointsFor: 368,
+    pointsAgainst: 325,
+    differential: 43,
+    streak: "L1",
+    winPercentage: 0.733,
+    clinchStatus: "CLINCHED_PLAYOFF"
+  },
+  {
+    id: "29",
+    name: "Carolina Panthers",
+    abbreviation: "CAR",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png",
+    seed: 4,
+    record: "9-6",
+    wins: 9,
+    losses: 6,
+    ties: 0,
+    pointsFor: 298,
+    pointsAgainst: 315,
+    differential: -17,
+    streak: "W1",
+    winPercentage: 0.600,
+    clinchStatus: "NONE"
+  },
+  {
+    id: "25",
+    name: "San Francisco 49ers",
+    abbreviation: "SF",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png",
+    seed: 5,
+    record: "11-4",
+    wins: 11,
+    losses: 4,
+    ties: 0,
+    pointsFor: 412,
+    pointsAgainst: 289,
+    differential: 123,
+    streak: "W3",
+    winPercentage: 0.733,
+    clinchStatus: "NONE"
+  },
+  {
+    id: "14",
+    name: "Los Angeles Rams",
+    abbreviation: "LAR",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png",
+    seed: 6,
+    record: "10-5",
+    wins: 10,
+    losses: 5,
+    ties: 0,
+    pointsFor: 395,
+    pointsAgainst: 318,
+    differential: 77,
+    streak: "W1",
+    winPercentage: 0.667,
+    clinchStatus: "NONE"
+  },
+  {
+    id: "9",
+    name: "Green Bay Packers",
+    abbreviation: "GB",
+    logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png",
+    seed: 7,
+    record: "9-5-1",
+    wins: 9,
+    losses: 5,
+    ties: 1,
+    pointsFor: 342,
+    pointsAgainst: 325,
+    differential: 17,
+    streak: "T1",
+    winPercentage: 0.633,
+    clinchStatus: "NONE"
+  }
+];
+
 export const mockPlayoffPicture: PlayoffPicture = {
   afc: {
     name: "AFC",
@@ -416,10 +538,10 @@ export const mockPlayoffPicture: PlayoffPicture = {
   },
   nfc: {
     name: "NFC",
-    teams: [],
+    teams: mockPlayoffTeamsNFC.slice(0, 7),
     inTheHunt: [],
     eliminated: [],
-    allTeams: []
+    allTeams: mockPlayoffTeamsNFC
   }
 };
 
@@ -558,7 +680,21 @@ export const mockScoreboardResponse = {
             href: "http://www.accuweather.com/"
           }
         }
-      }]
+      }],
+      status: {
+        clock: 0,
+        displayClock: "0:00",
+        period: 0,
+        type: {
+          id: "1",
+          name: "STATUS_SCHEDULED",
+          state: "pre",
+          completed: false,
+          description: "Scheduled",
+          detail: "1/20 - 1:15 AM EST",
+          shortDetail: "1/20 - 1:15 AM EST"
+        }
+      }
     }
   ]
 };
@@ -587,17 +723,18 @@ export const mockStandingsResponse = {
             logo: team.logoUrl
           },
           stats: [
-            { name: "wins", displayValue: team.wins.toString(), value: team.wins },
-            { name: "losses", displayValue: team.losses.toString(), value: team.losses },
-            { name: "ties", displayValue: team.ties.toString(), value: team.ties },
-            { name: "winpercent", displayValue: team.winPercentage.toFixed(3), value: team.winPercentage },
-            { name: "pointsFor", displayValue: team.pointsFor.toString(), value: team.pointsFor },
-            { name: "pointsAgainst", displayValue: team.pointsAgainst.toString(), value: team.pointsAgainst },
-            { name: "differential", displayValue: team.differential.toString(), value: team.differential },
-            { name: "streak", displayValue: team.streak, value: team.streak },
-            { name: "playoffseed", displayValue: team.seed.toString(), value: team.seed },
+            { name: "wins", type: "wins", displayValue: team.wins.toString(), value: team.wins },
+            { name: "losses", type: "losses", displayValue: team.losses.toString(), value: team.losses },
+            { name: "ties", type: "ties", displayValue: team.ties.toString(), value: team.ties },
+            { name: "winpercent", type: "winpercent", displayValue: team.winPercentage.toFixed(3), value: team.winPercentage },
+            { name: "pointsFor", type: "pointsfor", displayValue: team.pointsFor.toString(), value: team.pointsFor },
+            { name: "pointsAgainst", type: "pointsagainst", displayValue: team.pointsAgainst.toString(), value: team.pointsAgainst },
+            { name: "differential", type: "differential", displayValue: team.differential.toString(), value: team.differential },
+            { name: "streak", type: "streak", displayValue: team.streak, value: team.streak },
+            { name: "playoffseed", type: "playoffseed", displayValue: team.seed.toString(), value: team.seed },
             {
               name: "clincher",
+              type: "clincher",
               displayValue: team.clinchStatus === "CLINCHED_HOMEFIELD" ? "*" :
                            team.clinchStatus === "CLINCHED_DIVISION" ? "z" :
                            team.clinchStatus === "CLINCHED_PLAYOFF" ? "x" :
@@ -606,7 +743,52 @@ export const mockStandingsResponse = {
                      team.clinchStatus === "CLINCHED_DIVISION" ? "z" :
                      team.clinchStatus === "CLINCHED_PLAYOFF" ? "x" :
                      team.clinchStatus === "ELIMINATED" ? "e" : ""
-            }
+            },
+            { name: "gamesbehind", type: "gamesbehind", displayValue: team.gamesBehind || "", value: team.gamesBehind || "" }
+          ]
+        }))
+      }
+    },
+    {
+      uid: "s:20~l:28~g:9~c:7",
+      id: "7",
+      name: "National Football Conference",
+      abbreviation: "NFC",
+      standings: {
+        id: "1",
+        name: "NFC",
+        displayName: "NFC",
+        entries: mockPlayoffTeamsNFC.map(team => ({
+          team: {
+            id: team.id,
+            uid: `s:20~l:28~t:${team.id}`,
+            displayName: team.name,
+            abbreviation: team.abbreviation,
+            logo: team.logoUrl
+          },
+          stats: [
+            { name: "wins", type: "wins", displayValue: team.wins.toString(), value: team.wins },
+            { name: "losses", type: "losses", displayValue: team.losses.toString(), value: team.losses },
+            { name: "ties", type: "ties", displayValue: team.ties.toString(), value: team.ties },
+            { name: "winpercent", type: "winpercent", displayValue: team.winPercentage.toFixed(3), value: team.winPercentage },
+            { name: "pointsFor", type: "pointsfor", displayValue: team.pointsFor.toString(), value: team.pointsFor },
+            { name: "pointsAgainst", type: "pointsagainst", displayValue: team.pointsAgainst.toString(), value: team.pointsAgainst },
+            { name: "differential", type: "differential", displayValue: team.differential.toString(), value: team.differential },
+            { name: "streak", type: "streak", displayValue: team.streak, value: team.streak },
+            { name: "playoffseed", type: "playoffseed", displayValue: team.seed.toString(), value: team.seed },
+            {
+              name: "clincher",
+              type: "clincher",
+              displayValue: team.clinchStatus === "CLINCHED_HOMEFIELD" ? "*" :
+                           team.clinchStatus === "CLINCHED_DIVISION" ? "z" :
+                           team.clinchStatus === "CLINCHED_PLAYOFF" ? "x" :
+                           team.clinchStatus === "ELIMINATED" ? "e" : "",
+              value: team.clinchStatus === "CLINCHED_HOMEFIELD" ? "*" :
+                     team.clinchStatus === "CLINCHED_DIVISION" ? "z" :
+                     team.clinchStatus === "CLINCHED_PLAYOFF" ? "x" :
+                     team.clinchStatus === "ELIMINATED" ? "e" : ""
+            },
+            { name: "gamesbehind", type: "gamesbehind", displayValue: team.gamesBehind || "", value: team.gamesBehind || "" }
           ]
         }))
       }

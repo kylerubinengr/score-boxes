@@ -40,7 +40,7 @@ describe('playoffService', () => {
 
       it('should parse NFC teams correctly (seeds 1-7)', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.json({
               ...mockStandingsResponse,
               children: [
@@ -161,7 +161,7 @@ describe('playoffService', () => {
 
       it('should parse record with ties correctly', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             const modifiedResponse = {
               ...mockStandingsResponse,
               children: [{
@@ -201,7 +201,7 @@ describe('playoffService', () => {
     describe('Edge Cases', () => {
       it('should handle incomplete standings data (< 7 teams per conference)', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.json({
               ...mockStandingsResponse,
               children: [{
@@ -224,7 +224,7 @@ describe('playoffService', () => {
 
       it('should handle missing clinch indicators', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             const modifiedResponse = {
               ...mockStandingsResponse,
               children: [{
@@ -239,7 +239,7 @@ describe('playoffService', () => {
                   }))
                 }
               }]
-            });
+            };
             return HttpResponse.json(modifiedResponse);
           })
         );
@@ -252,7 +252,7 @@ describe('playoffService', () => {
 
       it('should handle missing stats gracefully', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             const modifiedResponse = {
               ...mockStandingsResponse,
               children: [{
@@ -265,7 +265,7 @@ describe('playoffService', () => {
                   }]
                 }
               }]
-            });
+            };
             return HttpResponse.json(modifiedResponse);
           })
         );
@@ -291,7 +291,7 @@ describe('playoffService', () => {
     describe('Error Cases', () => {
       it('should fall back to mock data on ESPN API failure', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.json({ error: 'Service Unavailable' }, { status: 503 });
           })
         );
@@ -306,7 +306,7 @@ describe('playoffService', () => {
 
       it('should fall back to mock data on malformed standings response', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.json({
               malformed: 'data',
               missing: 'children'
@@ -323,7 +323,7 @@ describe('playoffService', () => {
 
       it('should fall back to mock data on network error', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.error();
           })
         );
@@ -336,7 +336,7 @@ describe('playoffService', () => {
 
       it('should fall back to mock data on JSON parse error', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.text('Invalid JSON response');
           })
         );
@@ -350,7 +350,7 @@ describe('playoffService', () => {
     describe('Mock Data Validation', () => {
       it('should return valid mock playoff picture structure', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.error(); // Force mock data
           })
         );
@@ -366,7 +366,7 @@ describe('playoffService', () => {
 
       it('should have properly sorted mock teams by seed', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.error(); // Force mock data
           })
         );
@@ -379,7 +379,7 @@ describe('playoffService', () => {
 
       it('should have valid records in mock data', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.error(); // Force mock data
           })
         );
@@ -395,7 +395,7 @@ describe('playoffService', () => {
 
       it('should include team logos in mock data', async () => {
         server.use(
-          http.get('http://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
+          http.get('https://site.api.espn.com/apis/v2/sports/football/nfl/standings', () => {
             return HttpResponse.error(); // Force mock data
           })
         );
