@@ -3,14 +3,12 @@ import { getMatchupComparison } from "@/services/matchupService";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Wind, Thermometer, Home, TrendingUp } from "lucide-react";
-import { OddsTable } from "@/components/dashboard/OddsTable";
 import { StatTable } from "@/components/dashboard/StatTable";
 import { ScoringSummary } from "@/components/game/ScoringSummary";
 import { AdvancedMatchupEngine } from "@/components/game/AdvancedMatchupEngine";
 import { GameDetailHeader } from "@/components/game/GameDetailHeader";
 import { GameTabManager } from "@/components/game/GameTabManager";
 import { formatGameTime } from "@/lib/utils";
-import { BettingOdds } from "@/types/nfl";
 import { SafeImage } from "@/components/common/SafeImage";
 import LiveGameView from "@/components/game/LiveGameView";
 
@@ -52,34 +50,6 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
 
   const isFinal = game.status === 'post';
   const matchupComparison = await getMatchupComparison(game.homeTeam.id, game.awayTeam.id);
-
-  // Consensus Odds Calculation
-  const consensusOdds: BettingOdds | null = game.bookmakers.length > 0 ? {
-    spread: game.bookmakers.reduce((acc, b) => acc + b.odds.spread, 0) / game.bookmakers.length,
-    total: game.bookmakers.reduce((acc, b) => acc + b.odds.total, 0) / game.bookmakers.length,
-    moneylineHome: 0,
-    moneylineAway: 0,
-  } : null;
-
-  let impliedHomeScore = 0;
-  let impliedAwayScore = 0;
-  let hasImpliedTotals = false;
-
-  if (consensusOdds && consensusOdds.total > 0) {
-      const total = consensusOdds.total;
-      const spread = consensusOdds.spread;
-      const absSpread = Math.abs(spread);
-      const favoredScore = (total + absSpread) / 2;
-      const underdogScore = (total - absSpread) / 2;
-      if (spread < 0) {
-          impliedHomeScore = favoredScore;
-          impliedAwayScore = underdogScore;
-      } else {
-          impliedAwayScore = favoredScore;
-          impliedHomeScore = underdogScore;
-      }
-      hasImpliedTotals = true;
-  }
 
   return (
     <div className="container mx-auto px-4 pb-4 pt-0 sm:px-6 sm:pb-6 lg:px-8 lg:pb-8 max-w-7xl">

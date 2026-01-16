@@ -1,31 +1,8 @@
-import { Game, Team, WeatherInfo, Bookmaker, BettingOdds, MatchupStats, StatLeader, TeamBoxscore, BettingResult, ScoringPlay, Linescore, BoxScoreData } from "@/types/nfl";
+import { Game, Team, WeatherInfo, MatchupStats, StatLeader, TeamBoxscore, ScoringPlay, Linescore, BoxScoreData } from "@/types/nfl";
 import { TEAM_BRANDING, TEAM_LOGOS, DEFAULT_NFL_LOGO } from "@/constants/teams";
 import { STADIUM_REGISTRY } from "@/constants/stadiums";
 import { weatherCache } from "@/lib/weatherCache";
 import { storage } from "@/lib/storage";
-
-// --- Local Storage Snapshot Logic ---
-const getPreviousOdds = (): Record<string, Bookmaker[]> => {
-  if (typeof window === "undefined") return {};
-  const stored = localStorage.getItem("odds_snapshot");
-  return stored ? JSON.parse(stored) : {};
-};
-
-const storeOdds = (games: Game[]) => {
-  if (typeof window === "undefined") return;
-  const snapshot = games.reduce((acc, game) => {
-    acc[game.id] = game.bookmakers;
-    return acc;
-  }, {} as Record<string, Bookmaker[]>);
-  localStorage.setItem("odds_snapshot", JSON.stringify(snapshot));
-};
-
-const calculateMovement = (current: number, previous: number): 'up' | 'down' | 'stable' => {
-  if (current > previous) return 'up';
-  if (current < previous) return 'down';
-  return 'stable';
-};
-
 
 // Helper function to map OpenWeather ID to our condition strings
 const mapWeatherCodeToCondition = (id: number): string => {
@@ -36,38 +13,22 @@ const mapWeatherCodeToCondition = (id: number): string => {
   return "Cloudy"; // Default case
 };
 
-// Helper to normalize team names for matching (e.g. "Washington Commanders" vs "Washington")
-const normalizeTeamName = (name: string): string => {
-  return name.toLowerCase()
-    .replace(/^(the\s+)/, '') // Remove leading "The"
-    .replace(/\s+/g, ' ')     // Collapse whitespace
-    .trim();
-};
-
 const sortGames = (games: Game[]) => {
   return games.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };
 
 export async function getGamesByWeek(
-  week: number = 17, 
+  week: number = 17,
   seasonType: number = 2,
-  fetchOdds: boolean = false,
   year: number = 2025
 ): Promise<{ games: Game[]; lastUpdated?: number; isSnapshot: boolean }> {
-  // Use provided year for weeks 1-18 (Regular Season). 
+  // Use provided year for weeks 1-18 (Regular Season).
   const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${year}&seasontype=${seasonType}&week=${week}`;
-  const oddsUrl = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?regions=us&markets=spreads,totals,h2h&apiKey=${process.env.NEXT_PUBLIC_ODDS_API_KEY}`;
 
   try {
-    // ESPN API is public and doesn't require a key
-    // Only skip odds fetching if that specific key is missing
-    const hasOddsKey = process.env.NEXT_PUBLIC_ODDS_API_KEY &&
-                       process.env.NEXT_PUBLIC_ODDS_API_KEY !== "YOUR_API_KEY";
-
-    const [espnData, oddsData] = await Promise.all([
-      fetch(espnUrl).then(res => res.ok ? res.json() : null).catch(() => null),
-      (fetchOdds && hasOddsKey) ? fetch(oddsUrl).then(res => res.ok ? res.json() : []).catch(() => []) : Promise.resolve([])
-    ]);
+    const espnData = await fetch(espnUrl)
+      .then(res => res.ok ? res.json() : null)
+      .catch(() => null);
 
     if (!espnData?.events) {
         const snapshot = storage.getSnapshot(week);
@@ -76,8 +37,6 @@ export async function getGamesByWeek(
         }
         throw new Error("Failed to fetch ESPN data and no snapshot available");
     }
-
-    const previousOdds = getPreviousOdds();
 
     const gamesPromises = espnData.events.map(async (event: any) => {
       const competition = event.competitions[0];
@@ -119,43 +78,6 @@ export async function getGamesByWeek(
         clinchedPlayoffs: awayComp.playoffStatus?.clinched,
       };
 
-      const normalizedHome = normalizeTeamName(homeTeam.name);
-      const normalizedAway = normalizeTeamName(awayTeam.name);
-
-      const gameOdds = Array.isArray(oddsData)
-        ? oddsData.find((o: any) => {
-            const oddsHome = normalizeTeamName(o.home_team);
-            const oddsAway = normalizeTeamName(o.away_team);
-            return (oddsHome.includes(normalizedHome) || normalizedHome.includes(oddsHome)) &&
-                   (oddsAway.includes(normalizedAway) || normalizedAway.includes(oddsAway));
-          })
-        : null;
-
-      const prevGameBookmakers = previousOdds[event.id] || [];
-
-      const bookmakers: Bookmaker[] =
-        gameOdds?.bookmakers
-          .filter((bookmaker: any) => ["draftkings", "fanduel", "betmgm"].includes(bookmaker.key))
-          .map((bookmaker: any) => {
-            const spreadMarket = bookmaker.markets.find((m: any) => m.key === "spreads");
-            const totalMarket = bookmaker.markets.find((m: any) => m.key === "totals");
-            const moneylineMarket = bookmaker.markets.find((m: any) => m.key === "h2h");
-
-            const currentSpread = spreadMarket?.outcomes.find((o: any) => o.name === homeTeam.name)?.point ?? 0;
-            const prevBookmaker = prevGameBookmakers.find(b => b.key === bookmaker.key);
-            const prevSpread = prevBookmaker?.odds.spread ?? currentSpread;
-
-            const odds: BettingOdds = {
-              spread: currentSpread,
-              total: totalMarket?.outcomes[0]?.point ?? 0,
-              moneylineHome: moneylineMarket?.outcomes.find((o: any) => o.name === homeTeam.name)?.price ?? 0,
-              moneylineAway: moneylineMarket?.outcomes.find((o: any) => o.name === awayTeam.name)?.price ?? 0,
-              movement: calculateMovement(currentSpread, prevSpread)
-            };
-
-            return { key: bookmaker.key, title: bookmaker.title, lastUpdate: bookmaker.last_update, odds };
-          }) ?? [];
-
       let weather: WeatherInfo = { temperature: 0, condition: "N/A", windSpeed: 0, precipChance: 0 };
       let lat, lon, isIndoor = false;
 
@@ -179,34 +101,6 @@ export async function getGamesByWeek(
 
       const homeScore = parseInt(homeComp.score) || 0;
       const awayScore = parseInt(awayComp.score) || 0;
-
-      let bettingResult: BettingResult | undefined;
-      if (isFinal && bookmakers.length > 0) {
-          const mainBookmaker = bookmakers[0];
-          const spread = mainBookmaker.odds.spread;
-          const total = mainBookmaker.odds.total;
-          
-          let spreadCoveredBy = 'PUSH';
-          let spreadResult = '';
-
-          if (homeScore + spread > awayScore) {
-              spreadCoveredBy = homeTeam.abbreviation;
-              spreadResult = `Covered ${spread > 0 ? '+' : ''}${spread}`;
-          } else if (homeScore + spread < awayScore) {
-              spreadCoveredBy = awayTeam.abbreviation;
-              spreadResult = `Covered ${spread > 0 ? '-' : '+'}${Math.abs(spread)}`; 
-          } else {
-              spreadCoveredBy = 'PUSH';
-              spreadResult = `Push ${spread}`;
-          }
-
-          let totalResult: 'OVER' | 'UNDER' | 'PUSH' = 'PUSH';
-          if (homeScore + awayScore > total) totalResult = 'OVER';
-          else if (homeScore + awayScore < total) totalResult = 'UNDER';
-
-          bettingResult = { spreadCoveredBy, spreadResult, totalResult, closingTotal: total };
-      }
-      
       const winnerId = isFinal ? (homeScore > awayScore ? homeTeam.id : (awayScore > homeScore ? awayTeam.id : undefined)) : undefined;
 
       return {
@@ -219,7 +113,6 @@ export async function getGamesByWeek(
         venueLocation: `${venue.address?.city}, ${venue.address?.state}`,
         homeTeam,
         awayTeam,
-        bookmakers,
         weather,
         broadcast: competition.broadcasts?.[0]?.names?.[0] ?? competition.geoBroadcasts?.[0]?.media?.shortName ?? "",
         isLive: statusState === 'in',
@@ -229,8 +122,7 @@ export async function getGamesByWeek(
         period: event.status.period,
         homeScore,
         awayScore,
-        winnerId,
-        bettingResult
+        winnerId
       };
     });
 
@@ -239,7 +131,6 @@ export async function getGamesByWeek(
     // Sort games by date
     sortGames(resolvedGames);
 
-    storeOdds(resolvedGames);
     storage.saveSnapshot(week, resolvedGames);
 
     return { games: resolvedGames, lastUpdated: Date.now(), isSnapshot: false };
@@ -268,12 +159,12 @@ export async function getGamesByTeam(
   // Determine max weeks based on season for regular season
   const maxRegularWeeks = year >= 2021 ? 18 : 17;
   const regularSeasonPromises = Array.from({ length: maxRegularWeeks }, (_, i) =>
-    getGamesByWeek(i + 1, 2, false, year)
+    getGamesByWeek(i + 1, 2, year)
   );
 
   // Playoffs are seasonType 3, weeks 1 (Wild Card) through 5 (Super Bowl)
   const playoffPromises = Array.from({ length: 5 }, (_, i) =>
-    getGamesByWeek(i + 1, 3, false, year)
+    getGamesByWeek(i + 1, 3, year)
   );
 
   // Fetch all regular season and playoff weeks in parallel
@@ -470,10 +361,6 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
       return undefined;
     }
     const data = await summaryRes.json();
-    
-    // const oddsUrl = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?regions=us&markets=spreads,totals,h2h&apiKey=${process.env.NEXT_PUBLIC_ODDS_API_KEY}`;
-    // const oddsData = await fetch(oddsUrl).then(res => res.ok ? res.json() : []).catch(() => []);
-    const oddsData: any[] = [];
 
     const competition = data.header.competitions[0];
     const statusType = data.header.competitions[0].status.type;
@@ -490,7 +377,7 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
     if (recordsMissing) {
          try {
              // Pass explicit year and week from header to get point-in-time records
-             const { games } = await getGamesByWeek(data.header.week, data.header.season.type, false, data.header.season.year);
+             const { games } = await getGamesByWeek(data.header.week, data.header.season.type, data.header.season.year);
              historicalGame = games.find(g => g.id === id);
          } catch (err) {
              console.warn("Failed to fetch historical game data for records:", err);
@@ -538,29 +425,6 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
       colors: awayBranding?.colors || { primary: "#000000", lightAccent: "#000000", darkAccent: "#FFFFFF" },
       clinchedPlayoffs: false,
     };
-    
-    const previousOdds = getPreviousOdds();
-    const gameOdds = Array.isArray(oddsData) ? oddsData.find((o: any) => o.home_team.includes(homeTeam.name) && o.away_team.includes(awayTeam.name)) : null;
-    const prevGameBookmakers = previousOdds[id] || [];
-    const bookmakers: Bookmaker[] = gameOdds?.bookmakers
-        .filter((b: any) => ["draftkings", "fanduel", "betmgm"].includes(b.key))
-        .map((b: any) => {
-            const spreadMarket = b.markets.find((m: any) => m.key === "spreads");
-            const totalMarket = b.markets.find((m: any) => m.key === "totals");
-            const moneylineMarket = b.markets.find((m: any) => m.key === "h2h");
-            const currentSpread = spreadMarket?.outcomes.find((o: any) => o.name === homeTeam.name)?.point ?? 0;
-            const prevBookmaker = prevGameBookmakers.find(pb => pb.key === b.key);
-            const prevSpread = prevBookmaker?.odds.spread ?? currentSpread;
-            return {
-                key: b.key, title: b.title, lastUpdate: b.last_update,
-                odds: {
-                    spread: currentSpread, total: totalMarket?.outcomes[0]?.point ?? 0,
-                    moneylineHome: moneylineMarket?.outcomes.find((o: any) => o.name === homeTeam.name)?.price ?? 0,
-                    moneylineAway: moneylineMarket?.outcomes.find((o: any) => o.name === awayTeam.name)?.price ?? 0,
-                    movement: calculateMovement(currentSpread, prevSpread)
-                }
-            };
-        }) ?? [];
 
     const venue = data.gameInfo.venue;
     const isIndoor = venue.indoor;
@@ -648,7 +512,7 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
       period: competition.status.period,
       date: data.header.date || new Date().toISOString(),
       venue: venue.fullName, venueLocation: `${venue.address?.city}, ${venue.address?.state}`,
-      homeTeam, awayTeam, bookmakers, weather,
+      homeTeam, awayTeam, weather,
       broadcast: competition.broadcasts?.[0]?.names?.[0] ?? "",
       isLive: statusType.state === 'in', indoor: isIndoor, status: statusType.state as 'pre' | 'in' | 'post',
       homeScore: parseInt(homeComp.score) || 0, awayScore: parseInt(awayComp.score) || 0,
@@ -697,20 +561,6 @@ export function getMockGames(week: number): Game[] {
         clinchedPlayoffs: false,
         color: "#125740",
       },
-      bookmakers: [
-        {
-          key: "draftkings",
-          title: "DraftKings",
-          lastUpdate: new Date().toISOString(),
-          odds: {
-            spread: -5.5,
-            total: 44.5,
-            moneylineHome: -250,
-            moneylineAway: 205,
-            movement: "stable",
-          },
-        },
-      ],
       weather: {
         temperature: 28,
         condition: "Snow",
@@ -764,7 +614,6 @@ export function getMockGames(week: number): Game[] {
         clinchedPlayoffs: false,
         color: "#0B162A",
       },
-      bookmakers: [],
       weather: {
         temperature: 15,
         condition: "Cloudy",

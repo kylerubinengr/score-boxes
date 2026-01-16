@@ -39,7 +39,6 @@ describe('useAdaptivePolling', () => {
       logoUrl: 'http://test.com/logo.png',
       color: '#FFFFFF',
     },
-    bookmakers: [],
     weather: { temperature: 70, condition: 'Sunny', windSpeed: 5, precipChance: 0 },
     broadcast: 'TEST',
     isLive: true,

@@ -83,8 +83,7 @@ export default function DashboardPage() {
     async function fetchData() {
       setIsLoading(true);
       try {
-        // Initial fetch gets everything including odds
-        const result = await getGamesByWeek(weekNum, seasonType, false, selectedSeason);
+        const result = await getGamesByWeek(weekNum, seasonType, selectedSeason);
         setData(result);
       } catch (e) {
         console.error("Dashboard fetch failed", e);
@@ -116,30 +115,8 @@ export default function DashboardPage() {
       }
 
       try {
-        // Fetch updates without hitting odds API
-        const result = await getGamesByWeek(weekNum, seasonType, false, selectedSeason);
-
-        // Merge new scores with existing odds/bookmakers
-        setData(prevData => {
-          if (!prevData) return result;
-
-          const mergedGames = result.games.map(newGame => {
-            const oldGame = prevData.games.find(g => g.id === newGame.id);
-            if (oldGame && newGame.bookmakers.length === 0) {
-              return {
-                ...newGame,
-                bookmakers: oldGame.bookmakers
-              };
-            }
-            return newGame;
-          });
-
-          return {
-            ...result,
-            games: mergedGames,
-            isSnapshot: result.isSnapshot
-          };
-        });
+        const result = await getGamesByWeek(weekNum, seasonType, selectedSeason);
+        setData(result);
       } catch (e) {
         console.error("Polling failed", e);
       }

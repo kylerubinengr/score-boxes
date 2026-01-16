@@ -118,17 +118,11 @@ A modern, real-time NFL game tracking dashboard built with Next.js 14+, TypeScri
 
    Add the following variables to `.env.local`:
    ```env
-   # Optional: The Odds API (for betting lines)
-   NEXT_PUBLIC_ODDS_API_KEY=your_odds_api_key_here
-
-   # Optional: OpenWeather API (for stadium weather)
+   # Optional: OpenWeather API (for stadium weather - currently disabled)
    NEXT_PUBLIC_OPENWEATHER_API_KEY=your_openweather_key_here
    ```
 
-   **⚠️ Note:** API keys are currently exposed in client bundle. See [CODE_REVIEW_REPORT.md](./CODE_REVIEW_REPORT.md) for security recommendations.
-
    **Get API Keys:**
-   - The Odds API: https://the-odds-api.com/
    - OpenWeather: https://openweathermap.org/api
 
 4. **Run the development server**
@@ -384,8 +378,7 @@ const {
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NEXT_PUBLIC_ODDS_API_KEY` | No | The Odds API key for betting lines |
-| `NEXT_PUBLIC_OPENWEATHER_API_KEY` | No | OpenWeather API key for weather |
+| `NEXT_PUBLIC_OPENWEATHER_API_KEY` | No | OpenWeather API key for weather (currently disabled) |
 
 ### Polling Configuration
 

@@ -20,7 +20,10 @@
       "Bash(if [ -f /Users/kylerubin/nfl-dashboard/lib/sumerSportsService.ts ])",
       "Bash(then mv /Users/kylerubin/nfl-dashboard/lib/sumerSportsService.ts /Users/kylerubin/nfl-dashboard/services/sumer-sports-service.ts)",
       "Bash(else echo \"File does not exist\")",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

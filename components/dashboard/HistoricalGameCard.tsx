@@ -1,6 +1,6 @@
 "use client";
 
-import { Game, Team, BettingResult } from "@/types/nfl";
+import { Game, Team } from "@/types/nfl";
 import { Home, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,46 +51,6 @@ const TeamSection = ({ team, score, isWinner }: { team: Team; score?: number; is
     </div>
   </div>
 );
-
-const BettingResultDisplay = ({ bettingResult, homeAbbr, awayAbbr, homeScore, awayScore }: { bettingResult?: BettingResult, homeAbbr: string, awayAbbr: string, homeScore?: number, awayScore?: number }) => {
-  if (!bettingResult || homeScore === undefined || awayScore === undefined) return null;
-
-  const totalPoints = homeScore + awayScore;
-
-  let spreadBadgeColor = 'text-slate-600';
-  if (bettingResult.spreadCoveredBy === homeAbbr || bettingResult.spreadCoveredBy === awayAbbr) {
-    spreadBadgeColor = 'text-green-700';
-  } else if (bettingResult.spreadCoveredBy === 'PUSH') {
-    spreadBadgeColor = 'text-amber-700';
-  }
-
-  let totalBadgeColor = 'text-slate-600';
-  if (bettingResult.totalResult === 'OVER') {
-    totalBadgeColor = 'text-green-700';
-  } else if (bettingResult.totalResult === 'UNDER') {
-    totalBadgeColor = 'text-red-700';
-  } else if (bettingResult.totalResult === 'PUSH') {
-    totalBadgeColor = 'text-amber-700';
-  }
-
-  return (
-    <div className="flex justify-around items-center text-center p-3 bg-slate-50/70 border-t border-slate-100 dark:bg-slate-800/30 dark:border-slate-800">
-      <div className="flex items-center gap-2">
-         <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight dark:text-slate-500">Spread</span>
-         <span className={`font-bold text-xs ${spreadBadgeColor} dark:${spreadBadgeColor.replace('text-slate-600', 'text-slate-300').replace('text-green-700', 'text-green-400').replace('text-amber-700', 'text-amber-400')}`}>
-            {bettingResult.spreadCoveredBy} {bettingResult.spreadResult}
-         </span>
-      </div>
-      <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
-      <div className="flex items-center gap-2">
-         <span className="text-[10px] uppercase font-bold text-slate-400 tracking-tight dark:text-slate-500">Total</span>
-         <span className={`font-bold text-xs ${totalBadgeColor} dark:${totalBadgeColor.replace('text-slate-600', 'text-slate-300').replace('text-green-700', 'text-green-400').replace('text-red-700', 'text-red-400').replace('text-amber-700', 'text-amber-400')}`}>
-            {totalPoints.toFixed(1)} ({bettingResult.totalResult} {bettingResult.closingTotal})
-         </span>
-      </div>
-    </div>
-  );
-};
 
 export function HistoricalGameCard({ game, showWeek = false }: HistoricalGameCardProps) {
   const router = useRouter();

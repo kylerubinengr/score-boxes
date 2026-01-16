@@ -23,21 +23,6 @@ export type WeatherInfo = {
   lastUpdated?: number;
 };
 
-export type BettingOdds = {
-  spread: number;
-  total: number;
-  moneylineHome: number;
-  moneylineAway: number;
-  movement?: 'up' | 'down' | 'stable';
-};
-
-export type Bookmaker = {
-  key: string;
-  title: string;
-  lastUpdate: string;
-  odds: BettingOdds;
-};
-
 export type StatLeader = {
   name: string;
   value: string;
@@ -136,13 +121,6 @@ export type TeamBoxscore = {
     defensiveTD?: number;
 };
 
-export type BettingResult = {
-    spreadCoveredBy: string; // Team abbreviation or 'PUSH'
-    spreadResult: string; // e.g., 'Covered -3.5'
-    totalResult: 'OVER' | 'UNDER' | 'PUSH';
-    closingTotal: number;
-};
-
 export type ScoringPlay = {
     id: string;
     quarter: number;
@@ -212,7 +190,6 @@ export type Game = {
   venueLocation: string;
   homeTeam: Team;
   awayTeam: Team;
-  bookmakers: Bookmaker[];
   weather: WeatherInfo;
   broadcast: string;
   isLive?: boolean;
@@ -226,7 +203,6 @@ export type Game = {
   awayScore?: number;
   winnerId?: string;
   boxscore?: { home: TeamBoxscore, away: TeamBoxscore };
-  bettingResult?: BettingResult;
   drives?: Drive[];
 };
 
