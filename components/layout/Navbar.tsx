@@ -178,12 +178,12 @@ function GameTab({
           }
         `}
       >
-        <span className="pr-16 md:pr-0 md:group-hover:pr-8">{label}</span>
+        <span className="pr-10 md:pr-0 md:group-hover:pr-8">{label}</span>
 
-        {/* Pin button - always visible on mobile, appears on hover on desktop */}
+        {/* Pin button - hidden on mobile, appears on hover on desktop */}
         <button
           onClick={handlePinToggle}
-          className={`absolute right-10 sm:right-9 md:right-8 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
+          className={`hidden md:block absolute right-10 sm:right-9 md:right-8 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
             md:opacity-0 md:group-hover:opacity-100`}
           aria-label={isPinned ? `Unpin ${label} tab` : `Pin ${label} tab`}
         >
