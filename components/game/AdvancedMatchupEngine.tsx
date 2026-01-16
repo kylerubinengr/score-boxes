@@ -67,16 +67,16 @@ const Tooltip = ({ text }: { text: string }) => (
     </div>
 );
 
-const TugOfWarBar = ({ 
-    valA, 
-    valB, 
-    colorsA, 
+const TugOfWarBar = ({
+    valA,
+    valB,
+    colorsA,
     colorsB,
     label
-}: { 
-    valA: number; 
-    valB: number; 
-    colorsA: { light: string; dark: string }; 
+}: {
+    valA: number;
+    valB: number;
+    colorsA: { light: string; dark: string };
     colorsB: { light: string; dark: string };
     label: string;
 }) => {
@@ -85,8 +85,8 @@ const TugOfWarBar = ({
     const pctB = 100 - pctA;
 
     return (
-        <div className="flex flex-col items-center gap-1 w-full max-w-[120px]">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1 dark:text-slate-400">
+        <div className="flex flex-col items-center gap-1 w-full max-w-[80px] sm:max-w-[120px]">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1 dark:text-slate-400 text-center leading-tight">
                 {label}
             </span>
             <div className="w-full h-1.5 flex bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -207,17 +207,17 @@ export function AdvancedMatchupEngine({ homeTeam, awayTeam, comparison }: Advanc
           '--hl-dark': homeColors.dark 
       } as React.CSSProperties : {};
 
-      const baseCellClass = "p-3 flex flex-col items-center justify-center transition-colors relative";
+      const baseCellClass = "p-2 sm:p-3 flex flex-col items-center justify-center transition-colors relative";
       const highlightClass = "bg-[var(--hl-light)] dark:bg-transparent dark:text-[var(--hl-dark)]";
       const borderClassAway = awayBetter ? "dark:border-l-[4px] dark:border-[var(--hl-dark)]" : "";
       const borderClassHome = homeBetter ? "dark:border-r-[4px] dark:border-[var(--hl-dark)]" : "";
 
       // Text Highlight
-      const textClass = (isBetter: boolean) => 
-        `font-mono font-bold ${isBetter ? 'text-slate-900 dark:text-[var(--hl-dark)] scale-110' : 'text-slate-600 dark:text-slate-400'}`;
+      const textClass = (isBetter: boolean) =>
+        `font-mono text-xs sm:text-sm font-bold ${isBetter ? 'text-slate-900 dark:text-[var(--hl-dark)] scale-110' : 'text-slate-600 dark:text-slate-400'}`;
 
       return (
-        <div key={row.id} className="grid grid-cols-[1fr_120px_1fr] border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm group">
+        <div key={row.id} className="grid grid-cols-[1fr_80px_1fr] sm:grid-cols-[1fr_120px_1fr] border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm group">
             {/* Away Team Cell */}
             <div 
                 className={`${baseCellClass} ${awayBetter ? `${highlightClass} ${borderClassAway}` : ''}`}
@@ -262,8 +262,8 @@ export function AdvancedMatchupEngine({ homeTeam, awayTeam, comparison }: Advanc
       <div>
           {sections.map(section => (
               <div key={section.id}>
-                  <div className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-sm border-y border-slate-200 dark:bg-slate-900/95 dark:border-slate-800 px-4 py-1.5">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{section.title}</h4>
+                  <div className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-sm border-y border-slate-200 dark:bg-slate-900/95 dark:border-slate-800 px-3 sm:px-4 py-1.5">
+                      <h4 className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest">{section.title}</h4>
                   </div>
                   <div>
                       {section.rows.map(row => renderRow(row))}
@@ -271,9 +271,9 @@ export function AdvancedMatchupEngine({ homeTeam, awayTeam, comparison }: Advanc
               </div>
           ))}
       </div>
-      
+
       <div className="p-2 bg-slate-50 border-t border-slate-100 text-center dark:bg-slate-900 dark:border-slate-800">
-        <p className="text-[9px] text-slate-400">
+        <p className="text-[8px] sm:text-[9px] text-slate-400 leading-relaxed">
             Green Badge = Top 5 • Red Badge = Bottom 5 • Bar Width = Relative Strength
         </p>
       </div>

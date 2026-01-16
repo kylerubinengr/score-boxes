@@ -16,8 +16,8 @@ export function ViewToggle() {
       <button
         onClick={() => router.push("/dashboard/18")}
         className={`
-          px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
-          flex items-center gap-2
+          px-3 py-3 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-200
+          flex items-center gap-1.5 sm:gap-2
           ${isWeekView
             ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
             : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
@@ -25,13 +25,14 @@ export function ViewToggle() {
         `}
       >
         <Calendar className="w-4 h-4" />
-        Week View
+        <span className="hidden xs:inline sm:inline">Week View</span>
+        <span className="xs:hidden sm:hidden">Week</span>
       </button>
       <button
         onClick={() => router.push("/team/BUF")}
         className={`
-          px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
-          flex items-center gap-2
+          px-3 py-3 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-200
+          flex items-center gap-1.5 sm:gap-2
           ${isTeamView
             ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
             : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
@@ -39,13 +40,14 @@ export function ViewToggle() {
         `}
       >
         <Users className="w-4 h-4" />
-        Team View
+        <span className="hidden xs:inline sm:inline">Team View</span>
+        <span className="xs:hidden sm:hidden">Team</span>
       </button>
       <button
         onClick={() => router.push("/dashboard/playoffs")}
         className={`
-          px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
-          flex items-center gap-2
+          px-3 py-3 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-200
+          flex items-center gap-1.5 sm:gap-2
           ${isStandingsView
             ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
             : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
@@ -53,7 +55,7 @@ export function ViewToggle() {
         `}
       >
         <Trophy className="w-4 h-4" />
-        Standings
+        <span>Standings</span>
       </button>
     </div>
   );

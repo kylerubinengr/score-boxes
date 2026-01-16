@@ -1,4 +1,4 @@
-import { TEAM_ID_TO_ABBR } from "@/constants/teams";
+import { TEAM_ID_TO_ABBR, getNflfastrAbbr } from "@/constants/teams";
 import fs from "fs/promises";
 import path from "path";
 
@@ -167,8 +167,10 @@ export async function getMatchupComparison(homeId: string, awayId: string): Prom
 
   const mapStats = (id: string): AdvancedTeamStats => {
     const espn = espnData[id] || {};
-    const teamAbbr = TEAM_ID_TO_ABBR[id];
-    const adv = advancedData[teamAbbr] || {};
+    const teamAbbr = TEAM_ID_TO_ABBR[id] || "";
+    const nflfastrAbbr = getNflfastrAbbr(teamAbbr);
+    
+    const adv = advancedData[nflfastrAbbr] || advancedData[teamAbbr] || {};
 
     return {
         record: espn.record || "0-0",

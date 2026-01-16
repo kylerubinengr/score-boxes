@@ -18,21 +18,21 @@ const NFL_DIVISIONS = {
 
 export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-6 sm:gap-y-8">
         {Object.entries(NFL_DIVISIONS).map(([division, teams]) => (
           <div key={division}>
-            <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+            <h4 className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
               {division}
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {teams.map((abbr) => (
                 <Link
                   key={abbr}
                   href={`/team/${abbr}`}
                   title={TEAM_NAMES[abbr]}
                   className={`
-                    w-12 h-12 rounded-full flex items-center justify-center
+                    w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center
                     transition-all duration-200 border-2
                     ${currentTeam === abbr
                       ? "bg-blue-600 border-blue-600 shadow-md dark:bg-blue-500 dark:border-blue-500 scale-110"
@@ -43,9 +43,9 @@ export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
                   <SafeImage
                     src={TEAM_LOGOS[abbr]}
                     alt={TEAM_NAMES[abbr]}
-                    width={32}
-                    height={32}
-                    className="object-contain"
+                    width={28}
+                    height={28}
+                    className="object-contain w-7 h-7 sm:w-8 sm:h-8"
                   />
                 </Link>
               ))}

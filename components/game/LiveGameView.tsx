@@ -32,41 +32,43 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
     : "Final";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Status Indicator - Shows polling state to user */}
-      <div className="flex justify-between items-center px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center px-3 sm:px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {isPolling && isVisible && (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              <span className="text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400">
                 Live updates active
-                {currentStatus === 'in' && ' (10s refresh)'}
-                {currentStatus === 'pre' && ' (60s refresh)'}
+                <span className="hidden sm:inline">
+                  {currentStatus === 'in' && ' (10s refresh)'}
+                  {currentStatus === 'pre' && ' (60s refresh)'}
+                </span>
               </span>
             </>
           )}
           {!isVisible && (
             <>
               <div className="w-2 h-2 bg-slate-400 rounded-full" />
-              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
-                Updates paused (tab hidden)
+              <span className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500">
+                Updates paused<span className="hidden sm:inline"> (tab hidden)</span>
               </span>
             </>
           )}
           {hasError && (
             <>
               <div className="w-2 h-2 bg-amber-500 rounded-full" />
-              <span className="text-xs font-medium text-amber-600 dark:text-amber-500">
-                Connection issue - retrying in 30s
+              <span className="text-[10px] sm:text-xs font-medium text-amber-600 dark:text-amber-500">
+                Connection issue<span className="hidden sm:inline"> - retrying in 30s</span>
               </span>
             </>
           )}
           {currentStatus === 'post' && (
             <>
               <div className="w-2 h-2 bg-slate-400 rounded-full" />
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Game finished - updates stopped
+              <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                Game finished<span className="hidden sm:inline"> - updates stopped</span>
               </span>
             </>
           )}
@@ -101,12 +103,12 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
       )}
 
       {/* Live Stats Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mt-6 sm:mt-8">
             {/* Away Team Stats */}
-            <div className="space-y-8">
-                <div className="flex items-center gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <SafeImage src={game.awayTeam.logoUrl} alt="" width={24} height={24} />
-                    <h3 className="text-sm font-black uppercase text-slate-400 tracking-widest">{game.awayTeam.name} Stats</h3>
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+                <div className="flex items-center gap-2 sm:gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
+                    <SafeImage src={game.awayTeam.logoUrl} alt="" width={20} height={20} className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <h3 className="text-xs sm:text-sm font-black uppercase text-slate-400 tracking-widest">{game.awayTeam.name} Stats</h3>
                 </div>
                 {game.matchupStats?.away.boxscore ? (
                     <div className="space-y-6">
@@ -118,10 +120,10 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
             </div>
 
             {/* Home Team Stats */}
-            <div className="space-y-8">
-                <div className="flex items-center gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <SafeImage src={game.homeTeam.logoUrl} alt="" width={24} height={24} />
-                    <h3 className="text-sm font-black uppercase text-slate-400 tracking-widest">{game.homeTeam.name} Stats</h3>
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+                <div className="flex items-center gap-2 sm:gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
+                    <SafeImage src={game.homeTeam.logoUrl} alt="" width={20} height={20} className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <h3 className="text-xs sm:text-sm font-black uppercase text-slate-400 tracking-widest">{game.homeTeam.name} Stats</h3>
                 </div>
                 {game.matchupStats?.home.boxscore ? (
                     <div className="space-y-6">
