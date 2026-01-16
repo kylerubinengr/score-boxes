@@ -140,11 +140,11 @@ function DriveItem({ drive, homeAbbr, awayAbbr }: { drive: Drive, homeAbbr: stri
     );
 }
 
-export function ScoringSummary({ 
-    homeTeam, 
-    awayTeam, 
-    scoringPlays, 
-    homeLinescores, 
+export function ScoringSummary({
+    homeTeam,
+    awayTeam,
+    scoringPlays,
+    homeLinescores,
     awayLinescores,
     homeScore,
     awayScore,
@@ -153,6 +153,18 @@ export function ScoringSummary({
     isLive
 }: ScoringSummaryProps) {
     const [activeTab, setActiveTab] = useState<'matchup' | 'summary' | 'pbp'>('summary');
+    const [selectedQuarter, setSelectedQuarter] = useState<number | 'all'>('all');
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Track window width for mobile detection
+    React.useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
     
     // --- Scoring Summary Logic ---
     const playsByQuarter: { [key: number]: ScoringPlay[] } = {};
@@ -189,28 +201,47 @@ export function ScoringSummary({
             opposingTeam
         };
     };
+
+    // Find the most recent quarter with scoring plays for default selection
+    const quartersWithPlays = Object.keys(playsByQuarter).map(Number).sort((a, b) => b - a);
+    const defaultQuarter = quartersWithPlays.length > 0 ? quartersWithPlays[0] : 1;
+
+    // Set default quarter on mount
+    React.useEffect(() => {
+        if (selectedQuarter === 'all' && quartersWithPlays.length > 0) {
+            setSelectedQuarter(defaultQuarter);
+        }
+    }, []);
+
+    // Filter scoring plays based on selected quarter
+    const filteredPlays = selectedQuarter === 'all'
+        ? scoringPlays
+        : scoringPlays.filter(play => play.quarter === selectedQuarter);
     
     return (
-        <div className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8 dark:bg-slate-900 dark:border-slate-800 flex flex-col h-[600px]">
+        <div className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6 sm:mb-8 dark:bg-slate-900 dark:border-slate-800 flex flex-col h-[600px]">
             {/* Tabs Header */}
             <div className="flex-shrink-0 flex border-b border-slate-100 bg-slate-50/50 dark:bg-slate-800/50 dark:border-slate-800">
-                <button 
+                <button
                     onClick={() => setActiveTab('matchup')}
-                    className={`flex-1 py-3 text-sm font-black uppercase tracking-widest transition-colors ${activeTab === 'matchup' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide sm:tracking-widest transition-colors ${activeTab === 'matchup' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
                 >
-                    Matchup Stats
+                    <span className="hidden sm:inline">Matchup Stats</span>
+                    <span className="sm:hidden">Matchup</span>
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('summary')}
-                    className={`flex-1 py-3 text-sm font-black uppercase tracking-widest transition-colors ${activeTab === 'summary' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide sm:tracking-widest transition-colors ${activeTab === 'summary' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
                 >
-                    Scoring Summary
+                    <span className="hidden sm:inline">Scoring Summary</span>
+                    <span className="sm:hidden">Scoring</span>
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('pbp')}
-                    className={`flex-1 py-3 text-sm font-black uppercase tracking-widest transition-colors ${activeTab === 'pbp' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide sm:tracking-widest transition-colors ${activeTab === 'pbp' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
                 >
-                    Play by Play
+                    <span className="hidden sm:inline">Play by Play</span>
+                    <span className="sm:hidden">Play by Play</span>
                 </button>
             </div>
 
@@ -231,82 +262,200 @@ export function ScoringSummary({
                         )}
                     </div>
                 ) : activeTab === 'summary' ? (
-                    <div className="overflow-x-auto h-full">
-                        <div 
-                            className="grid min-w-[800px]"
-                            style={{
-                                gridTemplateColumns: `200px repeat(${quarters.length}, minmax(160px, 1fr)) 100px`
-                            }}
-                        >
-                            {/* Header Row */}
-                            <div className="p-3 bg-slate-50 text-left font-black text-slate-400 uppercase text-xs tracking-wider border-b border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">Team</div>
-                            {quarters.map(q => (
-                                <div key={`header-${q}`} className="p-3 bg-slate-50 text-center font-black text-slate-400 uppercase text-xs border-b border-l border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">
-                                    {q > 4 ? 'OT' : q}
-                                </div>
-                            ))}
-                            <div className="p-3 bg-slate-100 text-center font-black text-slate-800 uppercase text-xs border-b border-l border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-800 sticky top-0 z-10">Total</div>
+                    isMobile ? (
+                        // Mobile View - Horizontal Table + Quarter Selector
+                        <div className="h-full flex flex-col">
+                            {/* Horizontal Table - Mobile Only */}
+                            <div className="overflow-x-auto flex-shrink-0 border-b-2 border-slate-200 dark:border-slate-700">
+                                <div
+                                    className="grid"
+                                    style={{
+                                        gridTemplateColumns: `minmax(80px, 120px) repeat(${quarters.length}, minmax(40px, 1fr)) minmax(50px, 80px)`,
+                                        minWidth: '100%'
+                                    }}
+                                >
+                                    {/* Header Row */}
+                                    <div className="p-2 bg-slate-50 text-left font-black text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">Team</div>
+                                    {quarters.map(q => (
+                                        <div key={`header-${q}`} className="p-2 bg-slate-50 text-center font-black text-slate-400 uppercase text-[10px] border-b border-l border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">
+                                            {q > 4 ? 'OT' : q}
+                                        </div>
+                                    ))}
+                                    <div className="p-2 bg-slate-100 text-center font-black text-slate-800 uppercase text-[10px] border-b border-l border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-800 sticky top-0 z-10">Total</div>
 
-                            {/* Away Team Row */}
-                            <div className="p-3 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
-                                <div className="relative w-6 h-6 flex-shrink-0">
-                                    <SafeImage src={awayTeam.logoUrl} alt={awayTeam.abbreviation} width={24} height={24} className="object-contain" />
+                                    {/* Away Team Row */}
+                                    <div className="p-2 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800">
+                                        <div className="relative w-4 h-4 flex-shrink-0">
+                                            <SafeImage src={awayTeam.logoUrl} alt={awayTeam.abbreviation} width={24} height={24} className="object-contain" />
+                                        </div>
+                                        <span className="font-bold text-slate-700 text-[11px] dark:text-slate-200 truncate">{awayTeam.abbreviation}</span>
+                                    </div>
+                                    {quarters.map((q, i) => (
+                                        <div key={`away-score-${q}`} className="p-2 flex items-center justify-center font-semibold text-slate-600 text-sm border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
+                                            {getScore(awayLinescores, i)}
+                                        </div>
+                                    ))}
+                                    <div className="p-2 flex items-center justify-center font-black text-slate-900 text-base bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
+                                        {awayScore}
+                                    </div>
+
+                                    {/* Home Team Row */}
+                                    <div className="p-2 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800">
+                                        <div className="relative w-4 h-4 flex-shrink-0">
+                                            <SafeImage src={homeTeam.logoUrl} alt={homeTeam.abbreviation} width={24} height={24} className="object-contain" />
+                                        </div>
+                                        <span className="font-bold text-slate-700 text-[11px] dark:text-slate-200 truncate">{homeTeam.abbreviation}</span>
+                                    </div>
+                                    {quarters.map((q, i) => (
+                                        <div key={`home-score-${q}`} className="p-2 flex items-center justify-center font-semibold text-slate-600 text-sm border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
+                                            {getScore(homeLinescores, i)}
+                                        </div>
+                                    ))}
+                                    <div className="p-2 flex items-center justify-center font-black text-slate-900 text-base bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
+                                        {homeScore}
+                                    </div>
                                 </div>
-                                <span className="font-bold text-slate-700 text-sm dark:text-slate-200">{awayTeam.name}</span>
-                            </div>
-                            {quarters.map((q, i) => (
-                                <div key={`away-score-${q}`} className="p-3 flex items-center justify-center font-semibold text-slate-600 text-lg border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
-                                    {getScore(awayLinescores, i)}
-                                </div>
-                            ))}
-                            <div className="p-3 flex items-center justify-center font-black text-slate-900 text-xl bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
-                                {awayScore}
                             </div>
 
-                            {/* Home Team Row */}
-                            <div className="p-3 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
-                                <div className="relative w-6 h-6 flex-shrink-0">
-                                    <SafeImage src={homeTeam.logoUrl} alt={homeTeam.abbreviation} width={24} height={24} className="object-contain" />
+                            {/* Quarter Selector - Mobile Only */}
+                            <div className="flex-shrink-0 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+                                <div className="flex items-center gap-2 p-2 overflow-x-auto">
+                                    <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 whitespace-nowrap mr-1">Filter:</span>
+                                    <button
+                                        onClick={() => setSelectedQuarter('all')}
+                                        className={`px-3 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                                            selectedQuarter === 'all'
+                                                ? 'bg-blue-600 text-white shadow-md dark:bg-blue-500'
+                                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        All
+                                    </button>
+                                    {quarters.map(q => (
+                                        <button
+                                            key={`quarter-btn-${q}`}
+                                            onClick={() => setSelectedQuarter(q)}
+                                            className={`px-3 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                                                selectedQuarter === q
+                                                    ? 'bg-blue-600 text-white shadow-md dark:bg-blue-500'
+                                                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {q > 4 ? 'OT' : `${q}Q`}
+                                        </button>
+                                    ))}
                                 </div>
-                                <span className="font-bold text-slate-700 text-sm dark:text-slate-200">{homeTeam.name}</span>
-                            </div>
-                            {quarters.map((q, i) => (
-                                <div key={`home-score-${q}`} className="p-3 flex items-center justify-center font-semibold text-slate-600 text-lg border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
-                                    {getScore(homeLinescores, i)}
-                                </div>
-                            ))}
-                            <div className="p-3 flex items-center justify-center font-black text-slate-900 text-xl bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
-                                {homeScore}
                             </div>
 
-                            {/* Plays Row */}
-                            <div className="bg-slate-50/50 border-r border-slate-100 dark:bg-slate-800/50 dark:border-slate-800"></div> {/* Empty under Team Name */}
-                            {quarters.map(q => {
-                                const quarterPlays = playsByQuarter[q] || [];
-                                return (
-                                    <div key={`plays-${q}`} className="p-3 space-y-4 border-l border-slate-100 px-4 dark:border-slate-800">
-                                        {quarterPlays.length > 0 ? quarterPlays.map(play => {
+                            {/* Filtered Scoring Plays - Mobile Only */}
+                            <div className="flex-1 overflow-y-auto p-3">
+                                {filteredPlays.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                        <p className="text-sm font-medium">No scoring plays in {selectedQuarter === 'all' ? 'this game' : selectedQuarter > 4 ? 'overtime' : `quarter ${selectedQuarter}`}</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredPlays.map(play => {
                                             const { scoringTeam, scoreString, opposingTeam } = getRunningScoreText(play);
                                             return (
-                                                <div key={play.id} className="mb-4 last:mb-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <SafeImage src={play.team.logo} alt={play.team.abbreviation} width={16} height={16} />
+                                                <div key={play.id} className="pb-4 border-b border-slate-100 last:border-0 dark:border-slate-800">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <SafeImage src={play.team.logo} alt={play.team.abbreviation} width={20} height={20} className="flex-shrink-0" />
                                                         <span className="font-bold text-xs dark:text-slate-300">{play.type}</span>
-                                                        <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{play.clock}</span>
+                                                        <span className="text-[10px] font-mono text-slate-400 ml-auto dark:text-slate-500">{play.clock}</span>
                                                     </div>
-                                                    <p className="text-xs text-slate-600 mb-1 dark:text-slate-400">{play.text}</p>
-                                                    <p className="text-[10px] text-slate-500 dark:text-slate-500">
-                                                        <span className="font-bold text-slate-700 dark:text-slate-300">{scoringTeam}</span> {scoreString} {opposingTeam}
-                                                    </p>
+                                                    <p className="text-xs text-slate-600 mb-2 leading-relaxed dark:text-slate-400">{play.text}</p>
+                                                    <div className="flex items-center justify-between bg-slate-50 px-2 py-1.5 rounded dark:bg-slate-800/50">
+                                                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{scoringTeam}</span>
+                                                        <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-slate-100">{scoreString}</span>
+                                                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{opposingTeam}</span>
+                                                    </div>
                                                 </div>
                                             );
-                                        }) : <div className="h-full w-full"></div>}
+                                        })}
                                     </div>
-                                )
-                            })}
-                            <div className="bg-slate-50/50 border-l border-slate-100 dark:bg-slate-800/50 dark:border-slate-800"></div> {/* Empty under Total */}
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        // Desktop View - Original Grid (unchanged)
+                        <div className="overflow-x-auto h-full">
+                            <div
+                                className="grid min-w-[800px]"
+                                style={{
+                                    gridTemplateColumns: `200px repeat(${quarters.length}, minmax(160px, 1fr)) 100px`
+                                }}
+                            >
+                                {/* Header Row */}
+                                <div className="p-3 bg-slate-50 text-left font-black text-slate-400 uppercase text-xs tracking-wider border-b border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">Team</div>
+                                {quarters.map(q => (
+                                    <div key={`header-${q}`} className="p-3 bg-slate-50 text-center font-black text-slate-400 uppercase text-xs border-b border-l border-slate-100 dark:bg-slate-800/50 dark:border-slate-800 dark:text-slate-500 sticky top-0 z-10">
+                                        {q > 4 ? 'OT' : q}
+                                    </div>
+                                ))}
+                                <div className="p-3 bg-slate-100 text-center font-black text-slate-800 uppercase text-xs border-b border-l border-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-800 sticky top-0 z-10">Total</div>
+
+                                {/* Away Team Row */}
+                                <div className="p-3 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
+                                    <div className="relative w-6 h-6 flex-shrink-0">
+                                        <SafeImage src={awayTeam.logoUrl} alt={awayTeam.abbreviation} width={24} height={24} className="object-contain" />
+                                    </div>
+                                    <span className="font-bold text-slate-700 text-sm dark:text-slate-200">{awayTeam.name}</span>
+                                </div>
+                                {quarters.map((q, i) => (
+                                    <div key={`away-score-${q}`} className="p-3 flex items-center justify-center font-semibold text-slate-600 text-lg border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
+                                        {getScore(awayLinescores, i)}
+                                    </div>
+                                ))}
+                                <div className="p-3 flex items-center justify-center font-black text-slate-900 text-xl bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
+                                    {awayScore}
+                                </div>
+
+                                {/* Home Team Row */}
+                                <div className="p-3 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800">
+                                    <div className="relative w-6 h-6 flex-shrink-0">
+                                        <SafeImage src={homeTeam.logoUrl} alt={homeTeam.abbreviation} width={24} height={24} className="object-contain" />
+                                    </div>
+                                    <span className="font-bold text-slate-700 text-sm dark:text-slate-200">{homeTeam.name}</span>
+                                </div>
+                                {quarters.map((q, i) => (
+                                    <div key={`home-score-${q}`} className="p-3 flex items-center justify-center font-semibold text-slate-600 text-lg border-b border-l border-slate-100 dark:text-slate-400 dark:border-slate-800">
+                                        {getScore(homeLinescores, i)}
+                                    </div>
+                                ))}
+                                <div className="p-3 flex items-center justify-center font-black text-slate-900 text-xl bg-slate-50 border-b border-l border-slate-100 dark:bg-slate-800/30 dark:text-slate-100 dark:border-slate-800">
+                                    {homeScore}
+                                </div>
+
+                                {/* Plays Row */}
+                                <div className="bg-slate-50/50 border-r border-slate-100 dark:bg-slate-800/50 dark:border-slate-800"></div> {/* Empty under Team Name */}
+                                {quarters.map(q => {
+                                    const quarterPlays = playsByQuarter[q] || [];
+                                    return (
+                                        <div key={`plays-${q}`} className="p-3 space-y-4 border-l border-slate-100 px-4 dark:border-slate-800">
+                                            {quarterPlays.length > 0 ? quarterPlays.map(play => {
+                                                const { scoringTeam, scoreString, opposingTeam } = getRunningScoreText(play);
+                                                return (
+                                                    <div key={play.id} className="mb-4 last:mb-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <SafeImage src={play.team.logo} alt={play.team.abbreviation} width={16} height={16} />
+                                                            <span className="font-bold text-xs dark:text-slate-300">{play.type}</span>
+                                                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{play.clock}</span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-600 mb-1 dark:text-slate-400">{play.text}</p>
+                                                        <p className="text-[10px] text-slate-500 dark:text-slate-500">
+                                                            <span className="font-bold text-slate-700 dark:text-slate-300">{scoringTeam}</span> {scoreString} {opposingTeam}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            }) : <div className="h-full w-full"></div>}
+                                        </div>
+                                    )
+                                })}
+                                <div className="bg-slate-50/50 border-l border-slate-100 dark:bg-slate-800/50 dark:border-slate-800"></div> {/* Empty under Total */}
+                            </div>
+                        </div>
+                    )
                 ) : (
                     <div className="bg-slate-50 dark:bg-slate-950 min-h-full">
                         {!drives || drives.length === 0 ? (

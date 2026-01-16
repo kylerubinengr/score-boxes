@@ -23,7 +23,7 @@ export function Navbar() {
 
   return (
     <nav className="w-full flex justify-between items-end px-4 pt-3 bg-slate-200 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800">
-      <div className="flex space-x-1 translate-y-[1px]">
+      <div className="flex space-x-1 translate-y-[1px] overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide relative">
         {/* Reordered: About first, Home second */}
         <Tab
           href="/about"
@@ -93,7 +93,8 @@ function Tab({ href, label, active }: { href: string; label: string; active: boo
     <Link
       href={href}
       className={`
-        px-6 py-2 rounded-t-lg text-sm font-medium transition-all duration-200 border-t border-x
+        px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition-all duration-200 border-t border-x
+        snap-start min-w-fit whitespace-nowrap
         ${active
           ? "bg-slate-50 dark:bg-slate-950 text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-800 border-b-transparent"
           : "bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-300/50 dark:hover:bg-slate-800/50"
@@ -168,8 +169,8 @@ function GameTab({
         href={`/game/${id}`}
         onClick={handleTabClick}
         className={`
-          px-6 py-2 rounded-t-lg text-sm font-medium transition-all duration-200 border-t border-x
-          flex items-center gap-2
+          px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition-all duration-200 border-t border-x
+          flex items-center gap-2 snap-start min-w-fit whitespace-nowrap
           ${!isPinned ? 'italic' : ''}
           ${active
             ? "bg-slate-50 dark:bg-slate-950 text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-800 border-b-transparent"
@@ -177,29 +178,27 @@ function GameTab({
           }
         `}
       >
-        <span className={isHovered ? "pr-8" : ""}>{label}</span>
+        <span className="pr-16 md:pr-0 md:group-hover:pr-8">{label}</span>
 
-        {/* Pin button - appears on hover */}
-        {isHovered && (
-          <button
-            onClick={handlePinToggle}
-            className="absolute right-8 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            aria-label={isPinned ? `Unpin ${label} tab` : `Pin ${label} tab`}
-          >
-            <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
-          </button>
-        )}
+        {/* Pin button - always visible on mobile, appears on hover on desktop */}
+        <button
+          onClick={handlePinToggle}
+          className={`absolute right-10 sm:right-9 md:right-8 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
+            md:opacity-0 md:group-hover:opacity-100`}
+          aria-label={isPinned ? `Unpin ${label} tab` : `Pin ${label} tab`}
+        >
+          <Pin className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${isPinned ? 'fill-current' : ''}`} />
+        </button>
 
-        {/* Close button - appears on hover */}
-        {isHovered && (
-          <button
-            onClick={handleClose}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            aria-label={`Close ${label} tab`}
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+        {/* Close button - always visible on mobile, appears on hover on desktop */}
+        <button
+          onClick={handleClose}
+          className={`absolute right-1 sm:right-1.5 md:right-2 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
+            md:opacity-0 md:group-hover:opacity-100`}
+          aria-label={`Close ${label} tab`}
+        >
+          <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+        </button>
       </Link>
     </div>
   );

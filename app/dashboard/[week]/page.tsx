@@ -171,22 +171,22 @@ export default function DashboardPage() {
 
   return (
     <main className="bg-slate-50 dark:bg-slate-950 min-h-screen pt-2 pb-8 transition-colors duration-300">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">
+      <div className="container mx-auto px-3 sm:px-4 max-w-7xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100">
               NFL Dashboard
             </h1>
             {isLive && (
-              <div className="flex items-center gap-2 text-red-600">
-                <Radio className="w-6 h-6 animate-pulse" />
-                <span className="font-semibold">Live</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 text-red-600">
+                <Radio className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 animate-pulse" />
+                <span className="text-sm sm:text-base font-semibold">Live</span>
               </div>
             )}
           </div>
           
-          <div className="flex flex-col items-end gap-3 w-full md:w-auto">
-             <div className="flex items-center gap-2">
+          <div className="flex flex-col items-stretch md:items-end gap-3 w-full md:w-auto">
+             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <SeasonSelector />
                 <ViewToggle />
              </div>
@@ -197,13 +197,13 @@ export default function DashboardPage() {
         <StatusBanner isSnapshot={data.isSnapshot} lastUpdated={data.lastUpdated} />
 
         {data.games.length === 0 ? (
-             <div className="text-center py-16">
-                <p className="text-slate-500 dark:text-slate-400">
+             <div className="text-center py-12 sm:py-16">
+                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400">
                   No games scheduled for {isPlayoffWeek ? week : `Week ${weekNum}`}.
                 </p>
             </div>
         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {data.games.map((game) => (
                 game.status === 'post' ? (
                     <HistoricalGameCard key={game.id} game={game} />

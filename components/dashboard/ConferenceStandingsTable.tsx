@@ -33,7 +33,7 @@ const SortableHeader = ({
   const isAsc = sortConfig.direction === 'asc';
 
   return (
-    <th className={`px-3 py-2 font-bold text-slate-500 uppercase tracking-wider text-[10px] dark:text-slate-400 ${className}`}>
+    <th className={`px-2 sm:px-3 py-2 font-bold text-slate-500 uppercase tracking-wider text-[9px] sm:text-[10px] dark:text-slate-400 ${className}`}>
       <button onClick={() => onSort(sortKey)} className="flex items-center gap-1">
         {label}
         {isSorted ? (
@@ -76,12 +76,15 @@ export function ConferenceStandingsTable({ conference, teams, sortConfig, onSort
       </h3>
 
       {/* Table Container - Horizontal scroll on mobile */}
-      <div className="overflow-x-auto border border-slate-200 rounded-lg dark:border-slate-700">
+      <div className="overflow-x-auto border border-slate-200 rounded-lg dark:border-slate-700 relative">
+        {/* Scroll Indicator for Mobile */}
+        <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 dark:from-slate-900"></div>
+
         <table className="w-full text-xs">
           {/* Table Head */}
           <thead className="bg-slate-50 dark:bg-slate-800/50">
             <tr className="border-b border-slate-200 dark:border-slate-700">
-              <th className="px-3 py-2 text-left font-bold text-slate-500 uppercase tracking-wider text-[10px] bg-slate-100 dark:bg-slate-800 dark:text-slate-400">
+              <th className="px-2 sm:px-3 py-2 text-left font-bold text-slate-500 uppercase tracking-wider text-[9px] sm:text-[10px] bg-slate-100 dark:bg-slate-800 dark:text-slate-400">
                 <button onClick={() => onSort('seed')} className="flex items-center gap-1">
                   RK
                   {sortConfig.key === 'seed' ? (
@@ -111,61 +114,61 @@ export function ConferenceStandingsTable({ conference, teams, sortConfig, onSort
                 className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors dark:border-slate-800 dark:hover:bg-slate-800/30"
               >
                 {/* Rank - Highlighted */}
-                <td className="px-3 py-3 text-center bg-slate-100 dark:bg-slate-800">
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{team.seed}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center bg-slate-100 dark:bg-slate-800">
+                  <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">{team.seed}</span>
                 </td>
 
                 {/* Team Name/Logo */}
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-2">
+                <td className="px-2 sm:px-3 py-2 sm:py-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <SafeImage
                       src={team.logoUrl}
                       alt={team.abbreviation}
-                      width={24}
-                      height={24}
-                      className="object-contain"
+                      width={20}
+                      height={20}
+                      className="object-contain sm:w-6 sm:h-6"
                       initials={team.abbreviation}
                     />
                     <div className="flex items-center">
-                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{team.abbreviation}</span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">{team.abbreviation}</span>
                       <ClinchIndicator status={team.clinchStatus} />
                     </div>
                   </div>
                 </td>
 
                 {/* W */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{team.wins}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">{team.wins}</span>
                 </td>
 
                 {/* L */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{team.losses}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">{team.losses}</span>
                 </td>
 
                 {/* T */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-500 dark:text-slate-400">{team.ties}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-500 dark:text-slate-400">{team.ties}</span>
                 </td>
 
                 {/* PCT */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{formatPct(team.winPercentage)}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">{formatPct(team.winPercentage)}</span>
                 </td>
 
                 {/* PF */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{team.pointsFor}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">{team.pointsFor}</span>
                 </td>
 
                 {/* PA */}
-                <td className="px-3 py-3 text-center">
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{team.pointsAgainst}</span>
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className="font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">{team.pointsAgainst}</span>
                 </td>
 
                 {/* DIFF */}
-                <td className="px-3 py-3 text-center">
-                  <span className={`font-mono ${
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
+                  <span className={`font-mono text-xs sm:text-sm ${
                     team.differential > 0 ? 'text-green-600 dark:text-green-400' :
                     team.differential < 0 ? 'text-red-600 dark:text-red-400' :
                     'text-slate-500 dark:text-slate-400'
@@ -175,7 +178,7 @@ export function ConferenceStandingsTable({ conference, teams, sortConfig, onSort
                 </td>
 
                 {/* STRK */}
-                <td className="px-3 py-3 text-center">
+                <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
                   <span className={`font-mono text-xs ${
                     team.streak.startsWith('W') ? 'text-green-600 dark:text-green-400' :
                     team.streak.startsWith('L') ? 'text-red-600 dark:text-red-400' :

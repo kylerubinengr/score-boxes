@@ -81,15 +81,15 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
   return (
     <div className="space-y-3">
       {/* Regular Season Weeks */}
-      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide">
-        <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2">
+      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
+        <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2 sticky left-3 bg-slate-50 dark:bg-slate-950 pr-2 z-10">
           Week:
         </span>
         {weeks.map((week) => (
           <Link
             key={week}
             href={`/dashboard/${week}`}
-            className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
+            className={`relative px-4 py-3 sm:px-3 sm:py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
               week === currentWeek && !isPlayoffWeek
                 ? "bg-blue-600 text-white shadow-md dark:bg-blue-500"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
@@ -107,8 +107,8 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
       </div>
 
       {/* Playoff Weeks */}
-      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 scrollbar-hide">
-        <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2">
+      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
+        <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2 sticky left-3 bg-slate-50 dark:bg-slate-950 pr-2 z-10">
           Playoffs:
         </span>
         {PLAYOFF_WEEKS.map((playoff) => {
@@ -121,7 +121,7 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
               <button
                 key={playoff.id}
                 disabled
-                className="px-3 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-900 dark:text-slate-600 dark:border-slate-800"
+                className="px-4 py-3 sm:px-3 sm:py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-900 dark:text-slate-600 dark:border-slate-800"
               >
                 {playoff.label}
               </button>
@@ -132,7 +132,7 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
             <Link
               key={playoff.id}
               href={`/dashboard/${playoff.id}`}
-              className={`relative px-3 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
+              className={`relative px-4 py-3 sm:px-3 sm:py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
                 isActive
                   ? "bg-blue-600 text-white shadow-md dark:bg-blue-500"
                   : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"

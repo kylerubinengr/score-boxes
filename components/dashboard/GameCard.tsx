@@ -75,17 +75,17 @@ export function GameCard({ game, showWeek = false }: { game: Game; showWeek?: bo
     };
   
       return (
-        <Link 
-          href={`/game/${game.id}`} 
+        <Link
+          href={`/game/${game.id}`}
           onClick={handleGameClick}
           className="block bg-white/80 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:border-blue-500 hover:scale-[1.01] transition-all duration-300 overflow-hidden flex flex-col h-full dark:bg-slate-900 dark:border-slate-800 dark:hover:border-blue-500"
         >
-          
+
           {/* 1. Header Cleanup & Alignment */}
-          <header className="px-4 py-3 flex justify-between items-start gap-4 bg-slate-50/50 border-b border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
-            <div className="text-sm text-slate-700 dark:text-slate-200">
+          <header className="px-3 sm:px-4 py-2 sm:py-3 flex justify-between items-start gap-2 sm:gap-4 bg-slate-50/50 border-b border-slate-100 dark:bg-slate-800/50 dark:border-slate-800">
+            <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">
               <p className="font-bold">{formatDate(game.date)}</p>
-              <p className="text-xs text-slate-500 mt-0.5 dark:text-slate-400">
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 dark:text-slate-400">
                  {displayBroadcast === 'TBD' && displayTime === 'TBD' ? (                         <span className="uppercase">TBD</span>
                        ) : (
                          <>
@@ -118,50 +118,52 @@ export function GameCard({ game, showWeek = false }: { game: Game; showWeek?: bo
       </header>
 
       {/* Main Content */}
-      <div className="p-4 flex-1">
-        
+      <div className="p-3 sm:p-4 flex-1">
+
         {/* Teams & Scores */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
             {/* Away Team */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <SafeImage 
-                      src={game.awayTeam.logoUrl} 
-                      alt={game.awayTeam.name} 
-                      width={48} 
-                      height={48}
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <SafeImage
+                      src={game.awayTeam.logoUrl}
+                      alt={game.awayTeam.name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 sm:w-12 sm:h-12"
                       initials={game.awayTeam.abbreviation.substring(0, 2)}
                       color={game.awayTeam.color}
                       fallbackClassName='rounded-full'
                     />
                     <div>
-                      <p className="font-bold text-slate-800 text-lg tracking-tight dark:text-slate-100">{game.awayTeam.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{game.awayTeam.record}</p>
+                      <p className="font-bold text-slate-800 text-sm sm:text-base md:text-lg tracking-tight dark:text-slate-100">{game.awayTeam.name}</p>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{game.awayTeam.record}</p>
                     </div>
                 </div>
-                <div className="text-2xl font-black text-slate-400 dark:text-slate-600">
+                <div className="text-xl sm:text-2xl font-black text-slate-400 dark:text-slate-600">
                    {isPre ? '' : game.awayScore}
                 </div>
             </div>
 
             {/* Home Team */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <SafeImage 
-                      src={game.homeTeam.logoUrl} 
-                      alt={game.homeTeam.name} 
-                      width={48} 
-                      height={48}
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <SafeImage
+                      src={game.homeTeam.logoUrl}
+                      alt={game.homeTeam.name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 sm:w-12 sm:h-12"
                       initials={game.homeTeam.abbreviation.substring(0, 2)}
                       color={game.homeTeam.color}
                       fallbackClassName='rounded-full'
                     />
                     <div>
-                      <p className="font-bold text-slate-800 text-lg tracking-tight dark:text-slate-100">{game.homeTeam.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{game.homeTeam.record}</p>
+                      <p className="font-bold text-slate-800 text-sm sm:text-base md:text-lg tracking-tight dark:text-slate-100">{game.homeTeam.name}</p>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{game.homeTeam.record}</p>
                     </div>
                 </div>
-                <div className="text-2xl font-black text-slate-400 dark:text-slate-600">
+                <div className="text-xl sm:text-2xl font-black text-slate-400 dark:text-slate-600">
                     {isPre ? '' : game.homeScore}
                 </div>
             </div>
@@ -169,10 +171,10 @@ export function GameCard({ game, showWeek = false }: { game: Game; showWeek?: bo
       </div>
 
       {/* Footer Restoration */}
-      <footer className="px-4 py-2 text-center text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 dark:text-slate-500">
-        <div className="flex items-center justify-center gap-2">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate max-w-[250px]">{game.venue} • {game.venueLocation}</span>
+      <footer className="px-3 sm:px-4 py-2 text-center text-[10px] sm:text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 dark:text-slate-500">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+          <MapPin className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate max-w-[200px] sm:max-w-[250px]">{game.venue} • {game.venueLocation}</span>
         </div>
       </footer>
     </Link>
