@@ -44,21 +44,21 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
 
       try {
         // Check if Wild Card (week 1) is complete
-        const { games: wcGames } = await getGamesByWeek(1, 3, false, selectedSeason);
+        const { games: wcGames } = await getGamesByWeek(1, 3, selectedSeason);
         const wcComplete = wcGames.length > 0 && wcGames.every(g => g.status === 'post');
 
         if (wcComplete) {
           unlocked.push("DIV");
 
           // Only check Divisional if Wild Card is complete
-          const { games: divGames } = await getGamesByWeek(2, 3, false, selectedSeason);
+          const { games: divGames } = await getGamesByWeek(2, 3, selectedSeason);
           const divComplete = divGames.length > 0 && divGames.every(g => g.status === 'post');
 
           if (divComplete) {
             unlocked.push("CONF");
 
             // Only check Conference if Divisional is complete
-            const { games: confGames } = await getGamesByWeek(3, 3, false, selectedSeason);
+            const { games: confGames } = await getGamesByWeek(3, 3, selectedSeason);
             const confComplete = confGames.length > 0 && confGames.every(g => g.status === 'post');
 
             if (confComplete) {

@@ -17,7 +17,7 @@ export async function getPlayoffGames(
   // Fetch playoff weeks (1=Wild Card, 2=Divisional, 3=Championship, 5=Super Bowl)
   for (const week of [1, 2, 3, 5]) {
     try {
-      const { games } = await getGamesByWeek(week, 3, false, year); // seasonType=3 for playoffs
+      const { games } = await getGamesByWeek(week, 3, year); // seasonType=3 for playoffs
       playoffGames.push(...games);
     } catch (error) {
       console.warn(`No playoff games found for week ${week}, year ${year}`);
