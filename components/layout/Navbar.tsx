@@ -23,7 +23,7 @@ export function Navbar() {
 
   return (
     <nav className="w-full flex justify-between items-end px-4 pt-3 bg-slate-200 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800">
-      <div className="flex space-x-1 translate-y-[1px] overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide relative">
+      <div className="flex flex-1 md:flex-initial space-x-1 translate-y-[1px] overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide relative mr-2 md:mr-0">
         {/* Reordered: About first, Home second */}
         <Tab
           href="/about"
@@ -40,7 +40,7 @@ export function Navbar() {
         {tabs.map((tab) => {
           const allSameWeek = tabs.every(t => t.week === tab.week);
           const allSameSeason = tabs.every(t => t.season === tab.season);
-          
+
           let label = `${tab.awayAbbreviation}@${tab.homeAbbreviation}`;
           let weekPrefix = '';
 
@@ -71,7 +71,7 @@ export function Navbar() {
         })}
       </div>
 
-      <div className="pb-2">
+      <div className="pb-2 flex-shrink-0">
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-slate-800"
@@ -169,8 +169,8 @@ function GameTab({
         href={`/game/${id}`}
         onClick={handleTabClick}
         className={`
-          px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition-all duration-200 border-t border-x
-          flex items-center gap-2 snap-start min-w-fit whitespace-nowrap
+          px-2 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition-all duration-200 border-t border-x
+          flex items-center justify-between gap-1 sm:gap-2 snap-start min-w-fit whitespace-nowrap
           ${!isPinned ? 'italic' : ''}
           ${active
             ? "bg-slate-50 dark:bg-slate-950 text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-800 border-b-transparent"
@@ -178,26 +178,26 @@ function GameTab({
           }
         `}
       >
-        <span className="pr-10 md:pr-0 md:group-hover:pr-8">{label}</span>
+        <span className="md:pr-0 md:group-hover:pr-8">{label}</span>
 
         {/* Pin button - hidden on mobile, appears on hover on desktop */}
         <button
           onClick={handlePinToggle}
-          className={`hidden md:block absolute right-10 sm:right-9 md:right-8 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
+          className={`hidden md:block absolute right-8 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
             md:opacity-0 md:group-hover:opacity-100`}
           aria-label={isPinned ? `Unpin ${label} tab` : `Pin ${label} tab`}
         >
-          <Pin className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${isPinned ? 'fill-current' : ''}`} />
+          <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
         </button>
 
         {/* Close button - always visible on mobile, appears on hover on desktop */}
         <button
           onClick={handleClose}
-          className={`absolute right-1 sm:right-1.5 md:right-2 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 md:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors
-            md:opacity-0 md:group-hover:opacity-100`}
+          className={`p-1 sm:p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0
+            md:absolute md:right-2 md:top-1/2 md:-translate-y-1/2 md:opacity-0 md:group-hover:opacity-100`}
           aria-label={`Close ${label} tab`}
         >
-          <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </Link>
     </div>

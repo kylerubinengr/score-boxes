@@ -38,13 +38,13 @@ export function SeasonSelector() {
   };
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 sm:px-3 py-2.5 sm:py-2 shadow-sm min-h-[44px]">
+    <div className="w-full md:w-auto flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 sm:px-3 py-2.5 sm:py-2 shadow-sm min-h-[44px]">
       <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Season:</span>
-      <div className="relative">
+      <div className="relative flex-1 md:flex-initial">
         <select
           value={selectedSeason}
           onChange={handleSeasonChange}
-          className="appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold pr-5 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer"
+          className="w-full appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold pr-5 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer"
         >
           {availableSeasons.map((year) => (
             <option key={year} value={year}>

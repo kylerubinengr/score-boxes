@@ -5,6 +5,8 @@ import { getCurrentNFLWeek } from "@/lib/nflDates";
 import { useSeason } from "@/context/SeasonContext";
 import { useEffect, useState } from "react";
 import { getGamesByWeek } from "@/services/gameService";
+import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 type PlayoffWeek = {
   id: string;
@@ -21,6 +23,7 @@ const PLAYOFF_WEEKS: PlayoffWeek[] = [
 
 export function WeekSelector({ currentWeek }: { currentWeek: number | string | "standings" }) {
   const { selectedSeason } = useSeason();
+  const router = useRouter();
   const [unlockedPlayoffWeeks, setUnlockedPlayoffWeeks] = useState<string[]>(["WC"]);
 
   // Prior to 2021, the NFL season had 17 weeks. From 2021 onwards, it has 18.
@@ -78,10 +81,38 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
 
   const isPlayoffWeek = typeof currentWeek === 'string';
 
+  const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedWeek = parseInt(e.target.value);
+    router.push(`/dashboard/${selectedWeek}`);
+  };
+
   return (
     <div className="space-y-3">
-      {/* Regular Season Weeks */}
-      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
+      {/* Regular Season Weeks - Mobile: Dropdown, Desktop: Buttons */}
+
+      {/* Mobile Dropdown */}
+      <div className="md:hidden flex items-center gap-2">
+        <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">
+          Week:
+        </span>
+        <div className="relative flex-1">
+          <select
+            value={typeof currentWeek === 'number' ? currentWeek : ''}
+            onChange={handleWeekChange}
+            className="w-full appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 cursor-pointer min-h-[44px]"
+          >
+            {weeks.map((week) => (
+              <option key={week} value={week}>
+                Week {week}{week === activeNFLWeek && selectedSeason === 2025 ? ' (Live)' : ''}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Desktop Buttons */}
+      <div className="hidden md:flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
         <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2 sticky left-3 bg-slate-50 dark:bg-slate-950 pr-2 z-10">
           Week:
         </span>

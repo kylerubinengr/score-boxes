@@ -82,7 +82,7 @@ export default function TeamPage() {
             </h1>
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
             <SeasonSelector />
             <ViewToggle />
           </div>
