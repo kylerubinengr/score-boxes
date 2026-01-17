@@ -1,4 +1,4 @@
-# NFL Dashboard Test Plan
+# # Score Boxes Test Plan Test Plan
 
 ## Executive Summary
 
@@ -491,4 +491,4 @@ Centralized mock data for:
 
 **Total New Tests**: ~4,511 lines
 
-This test plan provides comprehensive coverage of all critical paths while ensuring production-readiness of the NFL Dashboard application.
+This test plan provides comprehensive coverage of all critical paths while ensuring production-readiness of the # Score Boxes Test Plan application.

@@ -5,8 +5,8 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen p-8 max-w-4xl mx-auto space-y-12">
       <header className="space-y-4">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
-          About NFL Dashboard
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+          About <span className="text-blue-600 dark:text-blue-400">Score Boxes</span>
         </h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
           A comprehensive analytics dashboard for NFL statistics, providing real-time game data, advanced metrics, and matchup analysis.
@@ -78,8 +78,8 @@ export default function AboutPage() {
         </div>
       </section>
       
-      <footer className="pt-8 border-t border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} NFL Dashboard. All rights reserved.</p>
+      <footer className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 text-sm">
+        <p>© {new Date().getFullYear()} Score Boxes. All rights reserved.</p>
       </footer>
     </div>
   );

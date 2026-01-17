@@ -1,4 +1,4 @@
-# NFL Dashboard Documentation
+# Score Boxes Documentation
 
 This directory contains project documentation organized by purpose and lifecycle stage.
 

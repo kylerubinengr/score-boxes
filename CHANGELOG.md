@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-12-23
 
 ### Added
-- Initial release of NFL Dashboard
+- Initial release of Score Boxes
 - Dashboard with week-by-week game schedule (Weeks 1-18 + Playoffs)
 - Live game updates with real-time score tracking
 - Play-by-play view with drive details
@@ -76,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Version 0.1.0 (Initial Release)
 
-The NFL Dashboard provides real-time NFL game tracking with advanced statistics and analysis. Key features include:
+The Score Boxes provides real-time NFL game tracking with advanced statistics and analysis. Key features include:
 
 **Core Features:**
 - Week-by-week game schedule with live updates

@@ -152,7 +152,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-4">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100">
-              NFL Dashboard
+              Score Boxes
             </h1>
             {isLive && (
               <div className="flex items-center gap-1.5 sm:gap-2 text-red-600">

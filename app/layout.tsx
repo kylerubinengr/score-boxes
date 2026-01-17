@@ -6,8 +6,8 @@ import { SeasonProvider } from "@/context/SeasonContext";
 import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
-  title: "NFL Week 17 Dashboard",
-  description: "Complete NFL Week 17 schedule with betting odds and weather conditions",
+  title: "Score Boxes",
+  description: "Real-time NFL scores, standings, and game tracking",
 };
 
 export default function RootLayout({

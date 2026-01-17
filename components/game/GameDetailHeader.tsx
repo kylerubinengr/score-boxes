@@ -20,7 +20,7 @@ interface GameDetailHeaderProps {
  * Provides clear visual hierarchy for game detail pages:
  * 1. Game matchup as primary H1 header
  * 2. Team information prominently displayed
- * 3. Clean, modern design matching NFL Dashboard branding
+ * 3. Clean, modern design matching Score Boxes branding
  */
 export function GameDetailHeader({
   homeTeam,

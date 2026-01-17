@@ -23,7 +23,7 @@ export default function PlayoffsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">
-              NFL Dashboard
+              Score Boxes
             </h1>
           </div>
 

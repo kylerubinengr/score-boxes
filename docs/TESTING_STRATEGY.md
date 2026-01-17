@@ -1,7 +1,7 @@
-# NFL Dashboard Testing Strategy
+# Score Boxes Testing Strategy
 
 ## Overview
-This document outlines the testing architecture and strategy for the NFL Dashboard application. The goal is to ensure reliability, maintainability, and confidence in the codebase as we scale.
+This document outlines the testing architecture and strategy for the Score Boxes application. The goal is to ensure reliability, maintainability, and confidence in the codebase as we scale.
 
 ## Infrastructure
 - **Test Runner:** Jest (via `next/jest`)

@@ -1,4 +1,4 @@
-# NFL Dashboard
+# Score Boxes
 
 A modern, real-time NFL game tracking dashboard built with Next.js 14+, TypeScript, and Tailwind CSS. Features live game updates, advanced statistics, playoff standings, and comprehensive game analysis.
 
