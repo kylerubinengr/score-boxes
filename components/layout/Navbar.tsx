@@ -93,7 +93,7 @@ function Tab({ href, label, active }: { href: string; label: string; active: boo
     <Link
       href={href}
       className={`
-        px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition-all duration-200 border-t border-x
+        px-4 sm:px-4 md:px-6 py-2 sm:py-2 rounded-t-lg text-sm sm:text-sm font-medium transition-all duration-200 border-t border-x
         snap-start min-w-fit whitespace-nowrap
         ${active
           ? "bg-slate-50 dark:bg-slate-950 text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-800 border-b-transparent"
