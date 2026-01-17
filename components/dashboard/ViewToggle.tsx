@@ -17,8 +17,9 @@ export function ViewToggle() {
     <div className="flex w-full md:inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-1">
       <button
         onClick={() => {
+          // Always navigate to the current week view, never to playoffs
           if (currentWeek === 'playoffs') {
-            router.push('/dashboard/playoffs');
+            router.push('/dashboard/18'); // Default to week 18 if we're in playoffs
           } else {
             router.push(`/dashboard/${currentWeek}`);
           }
