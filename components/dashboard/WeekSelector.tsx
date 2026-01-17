@@ -82,30 +82,52 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
   const isPlayoffWeek = typeof currentWeek === 'string';
 
   const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedWeek = parseInt(e.target.value);
-    router.push(`/dashboard/${selectedWeek}`);
+    const value = e.target.value;
+    // Check if it's a playoff week (string) or regular week (number)
+    if (PLAYOFF_WEEKS.some(p => p.id === value)) {
+      router.push(`/dashboard/${value}`);
+    } else {
+      const selectedWeek = parseInt(value);
+      router.push(`/dashboard/${selectedWeek}`);
+    }
   };
 
   return (
     <div className="space-y-3">
       {/* Regular Season Weeks - Mobile: Dropdown, Desktop: Buttons */}
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown - Combined Regular Season + Playoffs */}
       <div className="md:hidden flex items-center gap-2">
         <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">
           Week:
         </span>
         <div className="relative flex-1">
           <select
-            value={typeof currentWeek === 'number' ? currentWeek : ''}
+            value={typeof currentWeek === 'string' ? currentWeek : currentWeek}
             onChange={handleWeekChange}
-            className="w-full appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 cursor-pointer min-h-[44px]"
+            className="w-full appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-base font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 cursor-pointer min-h-[44px]"
           >
+            {/* Regular Season Weeks */}
             {weeks.map((week) => (
               <option key={week} value={week}>
                 Week {week}{week === activeNFLWeek && selectedSeason === 2025 ? ' (Live)' : ''}
               </option>
             ))}
+
+            {/* Playoff Weeks */}
+            {PLAYOFF_WEEKS.map((playoff) => {
+              const isUnlocked = unlockedPlayoffWeeks.includes(playoff.id);
+              if (!isUnlocked) return null;
+
+              return (
+                <option key={playoff.id} value={playoff.id}>
+                  {playoff.label === 'WC' ? 'Wild Card' :
+                   playoff.label === 'DIV' ? 'Divisional' :
+                   playoff.label === 'CONF' ? 'Conference' :
+                   playoff.label === 'SB' ? 'Super Bowl' : playoff.label}
+                </option>
+              );
+            })}
           </select>
           <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -137,8 +159,8 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string | "
         ))}
       </div>
 
-      {/* Playoff Weeks */}
-      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
+      {/* Playoff Weeks - Desktop Only */}
+      <div className="hidden md:flex items-center gap-2 overflow-x-auto overflow-y-visible pb-2 -mx-3 px-3">
         <span className="text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-2 sticky left-3 bg-slate-50 dark:bg-slate-950 pr-2 z-10">
           Playoffs:
         </span>

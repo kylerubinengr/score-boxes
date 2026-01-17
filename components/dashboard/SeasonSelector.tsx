@@ -38,13 +38,13 @@ export function SeasonSelector() {
   };
 
   return (
-    <div className="w-full md:w-auto flex items-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 sm:px-3 py-2.5 sm:py-2 shadow-sm min-h-[44px]">
-      <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Season:</span>
+    <div className="w-full md:w-auto flex items-center gap-2 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 sm:px-3 py-3 sm:py-2 shadow-sm min-h-[44px]">
+      <span className="text-sm sm:text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Season:</span>
       <div className="relative flex-1 md:flex-initial">
         <select
           value={selectedSeason}
           onChange={handleSeasonChange}
-          className="w-full appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-bold pr-5 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer"
+          className="w-full appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-base sm:text-sm font-semibold sm:font-bold pr-6 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer"
         >
           {availableSeasons.map((year) => (
             <option key={year} value={year}>
@@ -52,7 +52,7 @@ export function SeasonSelector() {
             </option>
           ))}
         </select>
-        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <ChevronDown className="w-5 h-5 sm:w-4 sm:h-4 text-slate-400 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none" />
       </div>
     </div>
   );

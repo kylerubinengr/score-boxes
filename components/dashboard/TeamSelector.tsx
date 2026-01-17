@@ -19,9 +19,14 @@ const NFL_DIVISIONS = {
 export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
   return (
     <div className="flex flex-col gap-3 sm:gap-4 w-full">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-6 sm:gap-y-8">
-        {Object.entries(NFL_DIVISIONS).map(([division, teams]) => (
-          <div key={division}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 sm:gap-x-4 gap-y-6 sm:gap-y-8 md:gap-x-4">
+        {Object.entries(NFL_DIVISIONS).map(([division, teams], index) => (
+          <div
+            key={division}
+            className={`
+              ${index % 2 === 0 && index < 7 ? 'relative after:content-[""] after:absolute after:right-[-12px] after:top-0 after:bottom-0 after:w-px after:bg-slate-200 after:dark:bg-slate-700 md:after:hidden' : ''}
+            `}
+          >
             <h4 className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
               {division}
             </h4>
