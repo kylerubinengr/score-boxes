@@ -44,10 +44,10 @@ export function SeasonSelector() {
         <select
           value={selectedSeason}
           onChange={handleSeasonChange}
-          className="w-full appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-base sm:text-sm font-semibold sm:font-bold pr-6 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer"
+          className="w-full appearance-none bg-transparent border-none text-slate-900 dark:text-slate-100 text-base sm:text-sm font-semibold sm:font-bold pr-6 sm:pr-6 focus:outline-none focus:ring-0 cursor-pointer [&>option]:text-slate-900 [&>option]:dark:text-slate-100"
         >
           {availableSeasons.map((year) => (
-            <option key={year} value={year}>
+            <option key={year} value={year} className="text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800">
               {year}
             </option>
           ))}
