@@ -25,7 +25,7 @@ export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
             <h4 className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
               {division}
             </h4>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-4 gap-3 md:flex md:flex-wrap md:gap-2">
               {teams.map((abbr) => (
                 <Link
                   key={abbr}
@@ -33,7 +33,7 @@ export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
                   title={TEAM_NAMES[abbr]}
                   className={`
                     w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center
-                    transition-all duration-200 border-2
+                    transition-all duration-200 border-2 min-h-[44px]
                     ${currentTeam === abbr
                       ? "bg-blue-600 border-blue-600 shadow-md dark:bg-blue-500 dark:border-blue-500 scale-110"
                       : "bg-white border-slate-200 hover:bg-slate-100 hover:border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"
