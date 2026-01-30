@@ -1,9 +1,12 @@
 "use client";
 
 import { useSeason } from "@/context/SeasonContext";
-import { getCurrentNFLWeek } from "@/lib/nflDates";
+import { fetchCurrentNFLWeek } from "@/lib/nflDates";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+
+// The most recent season with NFL data
+const CURRENT_SEASON = 2025;
 
 export function SeasonSelector() {
   const router = useRouter();
@@ -11,30 +14,36 @@ export function SeasonSelector() {
   const { selectedSeason, setSelectedSeason } = useSeason();
   const availableSeasons = [2025, 2024, 2023, 2022, 2021, 2020];
 
-  const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSeasonChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSeason = parseInt(e.target.value);
     setSelectedSeason(newSeason);
 
-    // If on Standings view, stay on Standings
+    // If on Standings view, stay on Standings regardless of season
     if (pathname === '/dashboard/playoffs') {
       router.push('/dashboard/playoffs');
       return;
     }
 
-    // Specific logic for Dashboard view redirection
+    // If on Team view, just update context — the page effect handles data refetch
+    if (pathname.startsWith('/team')) {
+      return;
+    }
+
+    // Week/Dashboard view — navigate to the appropriate week
     if (pathname === '/' || pathname.startsWith('/dashboard')) {
-      if (newSeason < 2025) {
+      if (newSeason < CURRENT_SEASON) {
+        // Historical season: default to week 1
         router.push('/dashboard/1');
-      } else if (newSeason === 2025) {
-        const currentWeek = getCurrentNFLWeek();
-        if (currentWeek === 'playoffs') {
-          router.push('/dashboard/playoffs');
-        } else {
-          router.push(`/dashboard/${currentWeek}`);
+      } else {
+        // Current season: use ESPN API to find the actual current week
+        try {
+          const weekInfo = await fetchCurrentNFLWeek();
+          router.push(`/dashboard/${weekInfo.route}`);
+        } catch {
+          router.push('/dashboard/1');
         }
       }
     }
-    // Team view just updates the context, no redirect needed (Effect in page handles fetch)
   };
 
   return (

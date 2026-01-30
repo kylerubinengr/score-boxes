@@ -2,12 +2,11 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { Calendar, Users, Trophy } from "lucide-react";
-import { getCurrentNFLWeek } from "@/lib/nflDates";
+import { fetchCurrentNFLWeek } from "@/lib/nflDates";
 
 export function ViewToggle() {
   const router = useRouter();
   const pathname = usePathname();
-  const currentWeek = getCurrentNFLWeek();
 
   const isTeamView = pathname.startsWith("/team");
   const isStandingsView = pathname === "/dashboard/playoffs";
@@ -16,13 +15,10 @@ export function ViewToggle() {
   return (
     <div className="flex w-full md:inline-flex md:w-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-1">
       <button
-        onClick={() => {
-          // Always navigate to the current week view, never to playoffs
-          if (currentWeek === 'playoffs') {
-            router.push('/dashboard/18'); // Default to week 18 if we're in playoffs
-          } else {
-            router.push(`/dashboard/${currentWeek}`);
-          }
+        onClick={async () => {
+          // Navigate to the current week (regular season or playoff round)
+          const weekInfo = await fetchCurrentNFLWeek();
+          router.push(`/dashboard/${weekInfo.route}`);
         }}
         className={`
           flex-1 md:flex-initial px-3 py-3 md:px-3 md:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-200

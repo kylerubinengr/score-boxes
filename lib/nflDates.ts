@@ -4,16 +4,20 @@
  * Rollover: Every Tuesday at 6:00 AM local (Eastern used as NFL standard)
  */
 
+/**
+ * Synchronous fallback for current NFL week based on hardcoded rollover dates.
+ * Use fetchCurrentNFLWeek() for accurate results from ESPN API.
+ */
 export function getCurrentNFLWeek(): number | 'playoffs' {
   const now = Date.now();
-  
+
   // Week 1 Rollover (Tuesday after Week 1 starts)
   // September 9, 2025, 06:00:00 AM EDT (UTC-4)
   const WEEK_1_ROLLOVER = new Date('2025-09-09T06:00:00-04:00').getTime();
   const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
   const weeksSinceFirstRollover = Math.floor((now - WEEK_1_ROLLOVER) / MS_PER_WEEK);
-  
+
   // If we are before the first Tuesday rollover, it's Week 1
   if (now < WEEK_1_ROLLOVER) {
     return 1;
@@ -27,4 +31,58 @@ export function getCurrentNFLWeek(): number | 'playoffs' {
   }
 
   return currentWeek;
+}
+
+// ESPN playoff week number → dashboard route segment
+const PLAYOFF_WEEK_TO_ROUTE: Record<number, string> = {
+  1: 'WC',
+  2: 'DIV',
+  3: 'CONF',
+  4: 'SB',
+  5: 'SB',
+};
+
+export interface CurrentWeekInfo {
+  /** Dashboard route path segment (e.g. "5", "WC", "SB") */
+  route: string;
+  /** ESPN season type: 2 = regular season, 3 = playoffs */
+  seasonType: number;
+  /** ESPN week number */
+  week: number;
+}
+
+/**
+ * Fetches the current NFL week from the ESPN API.
+ * Returns the dashboard route for the current/upcoming week.
+ * This accounts for the actual game schedule, not just calendar dates.
+ */
+export async function fetchCurrentNFLWeek(): Promise<CurrentWeekInfo> {
+  try {
+    const res = await fetch(
+      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
+      { cache: 'no-store' }
+    );
+
+    if (!res.ok) throw new Error(`ESPN API returned ${res.status}`);
+
+    const data = await res.json();
+    const seasonType: number = data.season?.type ?? 2;
+    const week: number = data.week?.number ?? 1;
+
+    if (seasonType === 3) {
+      // Playoffs — map ESPN week to dashboard route
+      const route = PLAYOFF_WEEK_TO_ROUTE[week] ?? 'WC';
+      return { route, seasonType, week };
+    }
+
+    // Regular season
+    return { route: String(week), seasonType, week };
+  } catch (e) {
+    // Fallback to time-based calculation
+    const fallback = getCurrentNFLWeek();
+    if (fallback === 'playoffs') {
+      return { route: 'WC', seasonType: 3, week: 1 };
+    }
+    return { route: String(fallback), seasonType: 2, week: fallback };
+  }
 }
