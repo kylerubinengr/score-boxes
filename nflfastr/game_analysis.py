@@ -48,8 +48,14 @@ def load_schedule(year):
     return df
 
 @cache_data_wrapper
-def load_pbp_data(year):
+def load_pbp_data(year, use_disk_cache=False):
     """Loads PBP data for the entire season."""
+    if use_disk_cache:
+        try:
+            df = nfl.import_pbp_data([year], cache=True)
+            return df
+        except Exception:
+            pass  # Fall through to network download if cache miss
     df = nfl.import_pbp_data([year])
     return df
 
@@ -79,12 +85,19 @@ def calculate_metrics(df):
 def get_team_stats(df, team_abbr):
     team_df = df[df['posteam'] == team_abbr]
     
+    early_df = team_df[team_df['down'].isin([1, 2])]
+    late_df = team_df[team_df['down'].isin([3, 4])]
+
     splits = {
         'All Plays': team_df,
-        'Run': team_df[team_df['is_run'] == 1],
+        'Rush': team_df[team_df['is_run'] == 1],
         'Pass': team_df[team_df['is_pass'] == 1],
-        'Early Downs (1st/2nd)': team_df[team_df['down'].isin([1, 2])],
-        'Late Downs (3rd/4th)': team_df[team_df['down'].isin([3, 4])]
+        'Early Downs (1st/2nd)': early_df,
+        'Early Rush': early_df[early_df['is_run'] == 1],
+        'Early Pass': early_df[early_df['is_pass'] == 1],
+        'Late Downs (3rd/4th)': late_df,
+        'Late Rush': late_df[late_df['is_run'] == 1],
+        'Late Pass': late_df[late_df['is_pass'] == 1],
     }
     
     stats = {}
@@ -378,19 +391,27 @@ def run_cli_mode(game_id):
         return
 
     try:
-        with suppress_stdout():
-            schedule = load_schedule(season)
-        game_info = schedule[schedule['game_id'] == game_id]
-        
-        if game_info.empty:
-            print(json.dumps({"error": f"Game ID {game_id} not found in {season} schedule."}))
+        # Parse teams directly from game_id (format: YYYY_WW_AWAY_HOME)
+        parts = game_id.split('_')
+        if len(parts) != 4:
+            print(json.dumps({"error": f"Invalid game_id format: {game_id}"}))
             return
-
-        home_team = game_info.iloc[0]['home_team']
-        away_team = game_info.iloc[0]['away_team']
+        away_team = parts[2]
+        home_team = parts[3]
 
         with suppress_stdout():
-            pbp_season = load_pbp_data(season)
+            # Ensure PBP data is cached to disk for fast subsequent loads
+            try:
+                import appdirs
+                cache_dir = os.path.join(
+                    appdirs.user_cache_dir('nfl_data_py', 'nfl_data_py'),
+                    'pbp', f'season={season}'
+                )
+                if not os.path.exists(cache_dir):
+                    nfl.cache_pbp([season])
+            except Exception:
+                pass  # Non-fatal: will fall back to network download
+            pbp_season = load_pbp_data(season, use_disk_cache=True)
             
         game_data_filtered = process_game_data(game_id, season, pbp_season)
         
@@ -429,16 +450,23 @@ def run_cli_mode(game_id):
             }
         }
         
-        # Helper to handle NaN for JSON serialization
-        def json_serial(obj):
-            if isinstance(obj, (np.integer, np.floating, float)):
-                if np.isnan(obj): return None
+        # Replace NaN/Inf with None recursively before JSON serialization
+        def sanitize(obj):
+            if isinstance(obj, dict):
+                return {k: sanitize(v) for k, v in obj.items()}
+            if isinstance(obj, list):
+                return [sanitize(v) for v in obj]
+            if isinstance(obj, (float, np.floating)):
+                if np.isnan(obj) or np.isinf(obj):
+                    return None
                 return float(obj)
+            if isinstance(obj, np.integer):
+                return int(obj)
             if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            return str(obj)
+                return sanitize(obj.tolist())
+            return obj
 
-        print(json.dumps(output, default=json_serial, indent=4))
+        print(json.dumps(sanitize(output), indent=4))
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))

@@ -40,7 +40,7 @@ export function SeasonSelector() {
   return (
     <div className="w-full md:w-auto flex items-center gap-2 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 sm:px-3 py-3 sm:py-2 shadow-sm min-h-[44px]">
       <span className="text-sm sm:text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Season:</span>
-      <div className="relative flex-1 md:flex-initial">
+      <div className="relative flex-1 md:flex-initial min-w-[4.5rem]">
         <select
           value={selectedSeason}
           onChange={handleSeasonChange}

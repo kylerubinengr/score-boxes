@@ -3,11 +3,11 @@ import { getMatchupComparison } from "@/services/matchupService";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Wind, Thermometer, Home, TrendingUp } from "lucide-react";
-import { StatTable } from "@/components/dashboard/StatTable";
 import { ScoringSummary } from "@/components/game/ScoringSummary";
 import { AdvancedMatchupEngine } from "@/components/game/AdvancedMatchupEngine";
 import { GameDetailHeader } from "@/components/game/GameDetailHeader";
 import { GameTabManager } from "@/components/game/GameTabManager";
+import { BoxScoreSection } from "@/components/game/BoxScoreSection";
 import { formatGameTime } from "@/lib/utils";
 import { SafeImage } from "@/components/common/SafeImage";
 import LiveGameView from "@/components/game/LiveGameView";
@@ -90,37 +90,16 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
                  />
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Away Team Stats */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
-                        <SafeImage src={game.awayTeam.logoUrl} alt="" width={24} height={24} />
-                        <h3 className="text-sm font-black uppercase text-slate-400 tracking-widest">{game.awayTeam.name} Stats</h3>
-                    </div>
-                    {game.matchupStats?.away.boxscore ? (
-                        <div className="space-y-6">
-                            <StatTable title="PASSING" headers={game.matchupStats.away.boxscore.passing.headers} players={game.matchupStats.away.boxscore.passing.players} totals={game.matchupStats.away.boxscore.passing.totals} />
-                            <StatTable title="RUSHING" headers={game.matchupStats.away.boxscore.rushing.headers} players={game.matchupStats.away.boxscore.rushing.players} totals={game.matchupStats.away.boxscore.rushing.totals} />
-                            <StatTable title="RECEIVING" headers={game.matchupStats.away.boxscore.receiving.headers} players={game.matchupStats.away.boxscore.receiving.players} totals={game.matchupStats.away.boxscore.receiving.totals} />
-                        </div>
-                    ) : <p className="text-slate-400 text-sm italic">Detailed stats not available.</p>}
-                </div>
-
-                {/* Home Team Stats */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-2 dark:border-slate-800">
-                        <SafeImage src={game.homeTeam.logoUrl} alt="" width={24} height={24} />
-                        <h3 className="text-sm font-black uppercase text-slate-400 tracking-widest">{game.homeTeam.name} Stats</h3>
-                    </div>
-                    {game.matchupStats?.home.boxscore ? (
-                        <div className="space-y-6">
-                            <StatTable title="PASSING" headers={game.matchupStats.home.boxscore.passing.headers} players={game.matchupStats.home.boxscore.passing.players} totals={game.matchupStats.home.boxscore.passing.totals} />
-                            <StatTable title="RUSHING" headers={game.matchupStats.home.boxscore.rushing.headers} players={game.matchupStats.home.boxscore.rushing.players} totals={game.matchupStats.home.boxscore.rushing.totals} />
-                            <StatTable title="RECEIVING" headers={game.matchupStats.home.boxscore.receiving.headers} players={game.matchupStats.home.boxscore.receiving.players} totals={game.matchupStats.home.boxscore.receiving.totals} />
-                        </div>
-                    ) : <p className="text-slate-400 text-sm italic">Detailed stats not available.</p>}
-                </div>
-            </div>
+            <BoxScoreSection
+                homeTeam={game.homeTeam}
+                awayTeam={game.awayTeam}
+                homeBoxscore={game.matchupStats?.home.boxscore}
+                awayBoxscore={game.matchupStats?.away.boxscore}
+                season={game.season}
+                week={game.week}
+                seasonType={game.seasonType}
+                gameStatus={game.status}
+            />
         </div>
       ) : (
         <div className="space-y-8">
