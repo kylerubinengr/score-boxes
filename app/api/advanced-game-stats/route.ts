@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { execFile } from 'child_process';
-import path from 'path';
-import type { AdvancedGameStats, AdvancedTeamStats, AdvancedPlayerStats, AdvancedPlayerStat } from '@/types/advancedStats';
+import type { AdvancedGameStats } from '@/types/advancedStats';
+import { fetchGamePlays } from '@/lib/pbpData';
+import { computeAdvancedStats } from '@/lib/pbpAggregator';
 
 // ESPN abbreviation → nflverse abbreviation mapping for edge cases
 const ABBR_MAP: Record<string, string> = {
@@ -22,118 +22,11 @@ function buildGameId(season: number, week: number, seasonType: number, away: str
   return `${season}_${weekStr}_${mapAbbreviation(away)}_${mapAbbreviation(home)}`;
 }
 
-// Python script outputs team_stats as { column: { rowLabel: value } }
-// e.g. { "EPA/Play": { "All Plays": 0.3, "Rush": 0.04, ... }, "Success Rate": { ... }, ... }
-type PythonTeamStatsDict = {
-  'EPA/Play': Record<string, number | null>;
-  'Success Rate': Record<string, number | null>;
-  '1st Down %': Record<string, number | null>;
-  'Plays': Record<string, number>;
-};
-
-type PythonPlayerRecord = {
-  passer_player_name?: string;
-  rusher_player_name?: string;
-  receiver_player_name?: string;
-  'EPA/play': number | null;
-  'Total EPA': number | null;
-  SR: number | null;
-  '1st%': number | null;
-  Count: number;
-};
-
-type PythonOutput = {
-  game_id: string;
-  season: number;
-  home_team: string;
-  away_team: string;
-  team_stats: {
-    home: PythonTeamStatsDict;
-    away: PythonTeamStatsDict;
-  };
-  player_stats: {
-    home: { passing: PythonPlayerRecord[]; rushing: PythonPlayerRecord[]; receiving: PythonPlayerRecord[] };
-    away: { passing: PythonPlayerRecord[]; rushing: PythonPlayerRecord[]; receiving: PythonPlayerRecord[] };
-  };
-  error?: string;
-};
-
-const SPLIT_KEY_MAP: Record<string, keyof AdvancedTeamStats> = {
-  'All Plays': 'allPlays',
-  'Rush': 'rush',
-  'Pass': 'pass',
-  'Early Downs (1st/2nd)': 'earlyDowns',
-  'Early Rush': 'earlyRush',
-  'Early Pass': 'earlyPass',
-  'Late Downs (3rd/4th)': 'lateDowns',
-  'Late Rush': 'lateRush',
-  'Late Pass': 'latePass',
-};
-
-function transformTeamStats(raw: PythonTeamStatsDict): AdvancedTeamStats {
-  const result = {} as AdvancedTeamStats;
-  for (const [pythonKey, tsKey] of Object.entries(SPLIT_KEY_MAP)) {
-    result[tsKey] = {
-      epaPerPlay: raw['EPA/Play']?.[pythonKey] ?? null,
-      successRate: raw['Success Rate']?.[pythonKey] ?? null,
-      firstDownPct: raw['1st Down %']?.[pythonKey] ?? null,
-      plays: raw['Plays']?.[pythonKey] ?? 0,
-    };
-  }
-  return result;
-}
-
-function transformPlayerStats(
-  passing: PythonPlayerRecord[],
-  rushing: PythonPlayerRecord[],
-  receiving: PythonPlayerRecord[]
-): AdvancedPlayerStats {
-  const mapPlayer = (rec: PythonPlayerRecord, nameKey: string): AdvancedPlayerStat => ({
-    name: (rec as Record<string, unknown>)[nameKey] as string || 'Unknown',
-    epaPerPlay: rec['EPA/play'] ?? null,
-    totalEpa: rec['Total EPA'] ?? null,
-    successRate: rec.SR ?? null,
-    firstDownPct: rec['1st%'] ?? null,
-    plays: rec.Count ?? 0,
-  });
-
-  return {
-    dropbacks: passing.map(r => mapPlayer(r, 'passer_player_name')),
-    rushAttempts: rushing.map(r => mapPlayer(r, 'rusher_player_name')),
-    passTargets: receiving.map(r => mapPlayer(r, 'receiver_player_name')),
-  };
-}
-
 // In-memory cache for computed game stats (completed games never change)
+// Persists across requests on the same warm serverless instance
 const resultCache = new Map<string, AdvancedGameStats>();
 
-function runPythonScript(gameId: string): Promise<PythonOutput> {
-  return new Promise((resolve, reject) => {
-    const scriptPath = path.join(process.cwd(), 'nflfastr', 'game_analysis.py');
-
-    execFile(
-      'python3',
-      [scriptPath, '--game_id', gameId],
-      { timeout: 120000, maxBuffer: 10 * 1024 * 1024 },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(`Python script failed: ${error.message}. stderr: ${stderr}`));
-          return;
-        }
-        try {
-          const parsed = JSON.parse(stdout);
-          if (parsed.error) {
-            reject(new Error(parsed.error));
-            return;
-          }
-          resolve(parsed as PythonOutput);
-        } catch (e) {
-          reject(new Error(`Failed to parse Python output: ${(e as Error).message}. stdout: ${stdout.slice(0, 500)}`));
-        }
-      }
-    );
-  });
-}
+export const maxDuration = 60; // Allow up to 60s for streaming large CSV files
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -150,8 +43,12 @@ export async function GET(request: Request) {
     );
   }
 
+  const seasonNum = parseInt(season);
+  const awayAbbr = mapAbbreviation(away);
+  const homeAbbr = mapAbbreviation(home);
+
   const gameId = buildGameId(
-    parseInt(season),
+    seasonNum,
     parseInt(week),
     parseInt(seasonType || '2'),
     away,
@@ -163,43 +60,33 @@ export async function GET(request: Request) {
   if (cached) {
     return NextResponse.json(cached, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
       },
     });
   }
 
   try {
-    const rawData = await runPythonScript(gameId);
+    console.log(`[advanced-game-stats] Fetching plays for ${gameId} (season ${seasonNum})...`);
+    // Fetch PBP plays for this game by streaming the season CSV
+    const plays = await fetchGamePlays(gameId, seasonNum);
+    console.log(`[advanced-game-stats] Found ${plays.length} plays for ${gameId}`);
 
-    const result: AdvancedGameStats = {
-      gameId: rawData.game_id,
-      season: rawData.season,
-      homeTeam: rawData.home_team,
-      awayTeam: rawData.away_team,
-      teamStats: {
-        home: transformTeamStats(rawData.team_stats.home),
-        away: transformTeamStats(rawData.team_stats.away),
-      },
-      playerStats: {
-        home: transformPlayerStats(
-          rawData.player_stats.home.passing,
-          rawData.player_stats.home.rushing,
-          rawData.player_stats.home.receiving
-        ),
-        away: transformPlayerStats(
-          rawData.player_stats.away.passing,
-          rawData.player_stats.away.rushing,
-          rawData.player_stats.away.receiving
-        ),
-      },
-    };
+    if (plays.length === 0) {
+      return NextResponse.json(
+        { error: 'No play-by-play data found for this game' },
+        { status: 404 }
+      );
+    }
+
+    // Aggregate stats in pure TypeScript
+    const result = computeAdvancedStats(plays, gameId, seasonNum, homeAbbr, awayAbbr);
 
     // Cache the result (completed games don't change)
     resultCache.set(gameId, result);
 
     return NextResponse.json(result, {
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
       },
     });
   } catch (error: unknown) {
