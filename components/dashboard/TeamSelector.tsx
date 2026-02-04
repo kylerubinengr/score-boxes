@@ -3,6 +3,8 @@
 import { TEAM_LOGOS, TEAM_NAMES } from "@/constants/teams";
 import Link from "next/link";
 import { SafeImage } from "@/components/common/SafeImage";
+import { useSeason } from "@/context/SeasonContext";
+import { buildTeamUrl } from "@/lib/routes";
 
 // Division organization
 const NFL_DIVISIONS = {
@@ -17,6 +19,7 @@ const NFL_DIVISIONS = {
 };
 
 export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
+  const { selectedSeason } = useSeason();
   return (
     <div className="flex flex-col gap-3 sm:gap-4 w-full">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 sm:gap-x-4 gap-y-6 sm:gap-y-8 md:gap-x-4">
@@ -34,7 +37,7 @@ export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
               {teams.map((abbr) => (
                 <Link
                   key={abbr}
-                  href={`/team/${abbr}`}
+                  href={buildTeamUrl(selectedSeason, abbr)}
                   title={TEAM_NAMES[abbr]}
                   className={`
                     w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center

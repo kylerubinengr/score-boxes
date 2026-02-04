@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
-export type ViewType = 'WEEK' | 'TEAM';
+export type ViewType = 'WEEK' | 'TEAM' | 'STANDINGS' | 'PERFORMANCES';
 
 export interface ViewMode {
   type: ViewType;

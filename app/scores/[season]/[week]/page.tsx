@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { getGamesByWeek } from "@/services/gameService";
 import { Game } from "@/types/nfl";
@@ -16,28 +16,33 @@ import { ViewToggle } from "@/components/dashboard/ViewToggle";
 import { useGameTabs } from "@/context/GameTabsContext";
 import { useSeason } from "@/context/SeasonContext";
 import { Radio } from "lucide-react";
+import { weekSlugToParams, isPlayoffSlug, getPlayoffFullName, buildScoresUrl } from "@/lib/routes";
 
-// Map playoff week strings to ESPN week numbers
-const PLAYOFF_WEEK_MAP: Record<string, number> = {
-  'WC': 1,
-  'DIV': 2,
-  'CONF': 3,
-  'SB': 5,
-};
-
-export default function DashboardPage() {
+export default function ScoresPage() {
   const params = useParams();
   const router = useRouter();
-  const week = params.week as string;
+  const pathname = usePathname();
 
-  // Check if it's a playoff week
-  const isPlayoffWeek = week in PLAYOFF_WEEK_MAP;
-  const weekNum = isPlayoffWeek ? PLAYOFF_WEEK_MAP[week] : parseInt(week);
-  const seasonType = isPlayoffWeek ? 3 : 2; // 3 for playoffs, 2 for regular season
+  const seasonParam = parseInt(params.season as string, 10);
+  const weekSlug = params.week as string;
+
+  // Parse week slug into ESPN params (memoized to avoid new object each render)
+  const weekParams = useMemo(() => weekSlugToParams(weekSlug), [weekSlug]);
+  const weekNum = weekParams?.weekNum ?? 1;
+  const seasonType = weekParams?.seasonType ?? 2;
+  const isPlayoff = isPlayoffSlug(weekSlug);
+  const isValidWeek = weekParams !== null;
 
   const { closeUnpinnedTabs } = useGameTabs();
-  const { selectedSeason, setViewMode } = useSeason();
-  const pathname = usePathname();
+  const { selectedSeason, setSelectedSeason, setViewMode } = useSeason();
+
+  // Sync season from URL to context (only when URL param changes)
+  useEffect(() => {
+    if (!isNaN(seasonParam) && seasonParam >= 2020 && seasonParam <= 2025) {
+      setSelectedSeason(seasonParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seasonParam]);
 
   // Update view mode state
   useEffect(() => {
@@ -50,10 +55,10 @@ export default function DashboardPage() {
     isSnapshot: boolean;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Ref to hold the current data for the interval closure
   const dataRef = useRef<{ games: Game[] } | null>(null);
-  
+
   useEffect(() => {
     if (data) {
         dataRef.current = data;
@@ -69,31 +74,44 @@ export default function DashboardPage() {
     }
   }, [closeUnpinnedTabs]);
 
+  // Validate params and redirect if invalid
+  useEffect(() => {
+    if (isNaN(seasonParam) || seasonParam < 2020 || seasonParam > 2025) {
+      router.push(buildScoresUrl(2025, 1));
+      return;
+    }
+    if (!isValidWeek) {
+      router.push(buildScoresUrl(seasonParam, 1));
+      return;
+    }
+  }, [seasonParam, isValidWeek, router]);
+
   // Initial Fetch
   useEffect(() => {
-    const maxWeeks = selectedSeason >= 2021 ? 18 : 17;
+    if (!isValidWeek) return;
 
-    // Validate week parameter
-    if (!isPlayoffWeek && (isNaN(weekNum) || weekNum < 1 || weekNum > maxWeeks)) {
-      // Invalid regular season week - redirect to Week 1
-      router.push(`/dashboard/1`);
+    const maxWeeks = seasonParam >= 2021 ? 18 : 17;
+
+    // Validate week parameter for regular season
+    if (!isPlayoff && (weekNum < 1 || weekNum > maxWeeks)) {
+      router.push(buildScoresUrl(seasonParam, 1));
       return;
     }
 
     async function fetchData() {
       setIsLoading(true);
       try {
-        const result = await getGamesByWeek(weekNum, seasonType, selectedSeason);
+        const result = await getGamesByWeek(weekNum, seasonType, seasonParam);
         setData(result);
       } catch (e) {
-        console.error("Dashboard fetch failed", e);
+        console.error("Scores fetch failed", e);
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchData();
-  }, [weekNum, seasonType, router, selectedSeason, isPlayoffWeek]);
+  }, [weekNum, seasonType, router, seasonParam, isPlayoff, isValidWeek]);
 
   // Smart Polling Logic for Live Games
   useEffect(() => {
@@ -103,38 +121,38 @@ export default function DashboardPage() {
 
     // Don't poll if there are no live games
     if (!hasLiveGames) {
-      console.log('[Dashboard] No live games - polling stopped');
+      console.log('[Scores] No live games - polling stopped');
       return;
     }
 
     // Only poll when tab is visible
     const pollData = async () => {
       if (document.visibilityState !== 'visible') {
-        console.log('[Dashboard] Tab hidden - skipping poll');
+        console.log('[Scores] Tab hidden - skipping poll');
         return;
       }
 
       try {
-        const result = await getGamesByWeek(weekNum, seasonType, selectedSeason);
+        const result = await getGamesByWeek(weekNum, seasonType, seasonParam);
         setData(result);
       } catch (e) {
         console.error("Polling failed", e);
       }
     };
 
-    console.log('[Dashboard] Live games detected - starting smart polling (30s interval)');
+    console.log('[Scores] Live games detected - starting smart polling (30s interval)');
 
     // Initial poll
     pollData();
 
     // Set up interval
-    const intervalId = setInterval(pollData, 30000); // Poll every 30 seconds
+    const intervalId = setInterval(pollData, 30000);
 
     return () => {
-      console.log('[Dashboard] Cleaning up polling interval');
+      console.log('[Scores] Cleaning up polling interval');
       clearInterval(intervalId);
     };
-  }, [data?.games, weekNum, seasonType, selectedSeason]); // Depend on games to re-evaluate if we still need to poll
+  }, [data?.games, weekNum, seasonType, seasonParam]);
 
   if (isLoading || !data) {
     return (
@@ -145,6 +163,9 @@ export default function DashboardPage() {
   }
 
   const isLive = data.games.some((game) => game.isLive);
+
+  // Build a currentWeek value compatible with WeekSelector
+  const currentWeekForSelector = isPlayoff ? weekSlug : weekNum;
 
   return (
     <main className="bg-slate-50 dark:bg-slate-950 min-h-screen pt-2 pb-8 transition-colors duration-300">
@@ -161,13 +182,13 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          
+
           <div className="flex flex-col items-stretch md:items-end gap-3 w-full md:w-auto">
              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <SeasonSelector />
                 <ViewToggle />
              </div>
-             <WeekSelector currentWeek={isPlayoffWeek ? week : weekNum} />
+             <WeekSelector currentWeek={currentWeekForSelector} />
           </div>
         </div>
 
@@ -176,7 +197,7 @@ export default function DashboardPage() {
         {data.games.length === 0 ? (
              <div className="text-center py-12 sm:py-16">
                 <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400">
-                  No games scheduled for {isPlayoffWeek ? week : `Week ${weekNum}`}.
+                  No games scheduled for {isPlayoff ? getPlayoffFullName(weekSlug) : `Week ${weekNum}`}.
                 </p>
             </div>
         ) : (

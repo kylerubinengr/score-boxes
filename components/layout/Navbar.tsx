@@ -15,11 +15,12 @@ export function Navbar() {
   const pathname = usePathname();
 
   // Determine label based on persisted view state
-  const homeLabel = `${viewMode.type === 'WEEK' ? 'Week' : 'Team'} - ${selectedSeason}`;
-  
-  // Home tab is active if we are on dashboard, team view, OR if we are on a game page (persisting context)
+  const viewLabels: Record<string, string> = { WEEK: 'Week', TEAM: 'Team', STANDINGS: 'Standings', PERFORMANCES: 'Performances' };
+  const homeLabel = `${viewLabels[viewMode.type] ?? 'Week'} - ${selectedSeason}`;
+
+  // Home tab is active if we are on scores, standings, performances, team view
   // unless we are explicitly on the about page
-  const isHomeActive = pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/team");
+  const isHomeActive = pathname === "/" || pathname.startsWith("/scores") || pathname.startsWith("/standings") || pathname.startsWith("/performances") || pathname.startsWith("/team");
 
   return (
     <nav className="w-full flex justify-between items-end px-4 pt-3 bg-slate-200 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-800">

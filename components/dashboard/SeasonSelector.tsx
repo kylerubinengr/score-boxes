@@ -4,6 +4,12 @@ import { useSeason } from "@/context/SeasonContext";
 import { fetchCurrentNFLWeek } from "@/lib/nflDates";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  buildScoresUrl,
+  buildStandingsUrl,
+  buildPerformancesUrl,
+  buildTeamUrl,
+} from "@/lib/routes";
 
 // The most recent season with NFL data
 const CURRENT_SEASON = 2025;
@@ -18,29 +24,39 @@ export function SeasonSelector() {
     const newSeason = parseInt(e.target.value);
     setSelectedSeason(newSeason);
 
-    // If on Standings view, stay on Standings regardless of season
-    if (pathname === '/dashboard/playoffs') {
-      router.push('/dashboard/playoffs');
+    // Standings view — navigate to new season standings URL
+    if (pathname.startsWith('/standings')) {
+      router.push(buildStandingsUrl(newSeason));
       return;
     }
 
-    // If on Team view, just update context — the page effect handles data refetch
+    // Performances view — navigate to new season performances URL
+    if (pathname.startsWith('/performances')) {
+      router.push(buildPerformancesUrl(newSeason));
+      return;
+    }
+
+    // Team view — swap season segment in URL, keep team
     if (pathname.startsWith('/team')) {
+      const parts = pathname.split('/');
+      // URL format: /team/{season}/{teamAbbr}
+      const teamAbbr = parts[3] || 'BUF';
+      router.push(buildTeamUrl(newSeason, teamAbbr));
       return;
     }
 
-    // Week/Dashboard view — navigate to the appropriate week
-    if (pathname === '/' || pathname.startsWith('/dashboard')) {
+    // Scores/Week view — navigate to the appropriate week with new season
+    if (pathname === '/' || pathname.startsWith('/scores')) {
       if (newSeason < CURRENT_SEASON) {
         // Historical season: default to week 1
-        router.push('/dashboard/1');
+        router.push(buildScoresUrl(newSeason, 1));
       } else {
         // Current season: use ESPN API to find the actual current week
         try {
           const weekInfo = await fetchCurrentNFLWeek();
-          router.push(`/dashboard/${weekInfo.route}`);
+          router.push(buildScoresUrl(newSeason, weekInfo.route));
         } catch {
-          router.push('/dashboard/1');
+          router.push(buildScoresUrl(newSeason, 1));
         }
       }
     }

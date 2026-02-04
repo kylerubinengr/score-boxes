@@ -1,20 +1,39 @@
 "use client";
 
+import { useEffect } from "react";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import { SeasonSelector } from "@/components/dashboard/SeasonSelector";
 import { ViewToggle } from "@/components/dashboard/ViewToggle";
 import { PlayoffsTab } from "@/components/dashboard/PlayoffsTab";
 import { TabLimitWarning } from "@/components/ui/TabLimitWarning";
 import { useSeason } from "@/context/SeasonContext";
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { buildStandingsUrl } from "@/lib/routes";
 
-export default function PlayoffsPage() {
-  const { setViewMode } = useSeason();
+export default function StandingsPage() {
+  const params = useParams();
+  const router = useRouter();
   const pathname = usePathname();
+  const seasonParam = parseInt(params.season as string, 10);
+  const { selectedSeason, setSelectedSeason, setViewMode } = useSeason();
+
+  // Sync season from URL to context (only when URL param changes)
+  useEffect(() => {
+    if (!isNaN(seasonParam) && seasonParam >= 2020 && seasonParam <= 2025) {
+      setSelectedSeason(seasonParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seasonParam]);
+
+  // Validate season param
+  useEffect(() => {
+    if (isNaN(seasonParam) || seasonParam < 2020 || seasonParam > 2025) {
+      router.push(buildStandingsUrl(2025));
+    }
+  }, [seasonParam, router]);
 
   // Update view mode state
   useEffect(() => {
-    setViewMode({ type: 'WEEK', href: pathname });
+    setViewMode({ type: 'STANDINGS', href: pathname });
   }, [pathname, setViewMode]);
 
   return (

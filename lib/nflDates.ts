@@ -43,13 +43,26 @@ const PLAYOFF_WEEK_TO_ROUTE: Record<number, string> = {
 };
 
 export interface CurrentWeekInfo {
-  /** Dashboard route path segment (e.g. "5", "WC", "SB") */
+  /** Legacy dashboard route path segment (e.g. "5", "WC", "SB") */
   route: string;
+  /** Human-readable URL slug (e.g. "week-5", "wild-card", "super-bowl") */
+  slug: string;
   /** ESPN season type: 2 = regular season, 3 = playoffs */
   seasonType: number;
   /** ESPN week number */
   week: number;
+  /** NFL season year (e.g. 2025) */
+  season: number;
 }
+
+// ESPN playoff week → human-readable slug
+const PLAYOFF_WEEK_TO_SLUG: Record<number, string> = {
+  1: 'wild-card',
+  2: 'divisional',
+  3: 'conference',
+  4: 'super-bowl',
+  5: 'super-bowl',
+};
 
 /**
  * Fetches the current NFL week from the ESPN API.
@@ -68,21 +81,23 @@ export async function fetchCurrentNFLWeek(): Promise<CurrentWeekInfo> {
     const data = await res.json();
     const seasonType: number = data.season?.type ?? 2;
     const week: number = data.week?.number ?? 1;
+    const season: number = data.season?.year ?? 2025;
 
     if (seasonType === 3) {
       // Playoffs — map ESPN week to dashboard route
       const route = PLAYOFF_WEEK_TO_ROUTE[week] ?? 'WC';
-      return { route, seasonType, week };
+      const slug = PLAYOFF_WEEK_TO_SLUG[week] ?? 'wild-card';
+      return { route, slug, seasonType, week, season };
     }
 
     // Regular season
-    return { route: String(week), seasonType, week };
+    return { route: String(week), slug: `week-${week}`, seasonType, week, season };
   } catch (e) {
     // Fallback to time-based calculation
     const fallback = getCurrentNFLWeek();
     if (fallback === 'playoffs') {
-      return { route: 'WC', seasonType: 3, week: 1 };
+      return { route: 'WC', slug: 'wild-card', seasonType: 3, week: 1, season: 2025 };
     }
-    return { route: String(fallback), seasonType: 2, week: fallback };
+    return { route: String(fallback), slug: `week-${fallback}`, seasonType: 2, week: fallback, season: 2025 };
   }
 }
