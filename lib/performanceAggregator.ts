@@ -36,6 +36,25 @@ function deriveOpponent(gameId: string, team: string): string {
   return team === away ? home : away;
 }
 
+/** Map roster position to display role (QB, RB, WR, TE) */
+function positionToRole(position: string | undefined): PlayerRole {
+  if (!position) return 'WR'; // Default fallback
+  const pos = position.toUpperCase();
+  if (pos === 'QB') return 'QB';
+  if (pos === 'RB' || pos === 'FB' || pos === 'HB') return 'RB';
+  if (pos === 'TE') return 'TE';
+  if (pos === 'WR') return 'WR';
+  // For other positions (K, P, OL, DL, LB, CB, S, etc.), skip them
+  return 'WR'; // Fallback, but these players typically won't have offensive stats
+}
+
+/** Check if a position is a skill position we want to track */
+function isSkillPosition(position: string | undefined): boolean {
+  if (!position) return false;
+  const pos = position.toUpperCase();
+  return ['QB', 'RB', 'FB', 'HB', 'WR', 'TE'].includes(pos);
+}
+
 // ---------------------------------------------------------------------------
 // Filtering — same criteria as pbpAggregator.ts
 // ---------------------------------------------------------------------------
@@ -64,18 +83,42 @@ function filterPlays(rows: PlayRow[]): FilteredPlay[] {
 }
 
 // ---------------------------------------------------------------------------
-// Grouping key: (gameId, playerName, role)
+// Player identification: maps (gameId, playerName) → (playerId, team)
 // ---------------------------------------------------------------------------
 
-type GroupKey = string; // "gameId|playerName|role"
-
-function makeKey(gameId: string, name: string, role: PlayerRole): GroupKey {
-  return `${gameId}|${name}|${role}`;
+interface PlayerInfo {
+  playerId: string | null;
+  team: string;
 }
 
-function parseKey(key: GroupKey): { gameId: string; playerName: string; role: PlayerRole } {
-  const [gameId, playerName, role] = key.split('|');
-  return { gameId, playerName, role: role as PlayerRole };
+function buildPlayerInfoMap(plays: FilteredPlay[]): Map<string, PlayerInfo> {
+  const playerInfo = new Map<string, PlayerInfo>();
+
+  for (const play of plays) {
+    // Track passer
+    if (play.passer_player_name && play.passer_player_id) {
+      const key = `${play.game_id}|${play.passer_player_name}`;
+      if (!playerInfo.has(key)) {
+        playerInfo.set(key, { playerId: play.passer_player_id, team: play.posteam });
+      }
+    }
+    // Track rusher
+    if (play.rusher_player_name && play.rusher_player_id) {
+      const key = `${play.game_id}|${play.rusher_player_name}`;
+      if (!playerInfo.has(key)) {
+        playerInfo.set(key, { playerId: play.rusher_player_id, team: play.posteam });
+      }
+    }
+    // Track receiver
+    if (play.receiver_player_name && play.receiver_player_id) {
+      const key = `${play.game_id}|${play.receiver_player_name}`;
+      if (!playerInfo.has(key)) {
+        playerInfo.set(key, { playerId: play.receiver_player_id, team: play.posteam });
+      }
+    }
+  }
+
+  return playerInfo;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +127,7 @@ function parseKey(key: GroupKey): { gameId: string; playerName: string; role: Pl
 
 /**
  * Computes season-wide per-game player performances from raw PBP data.
+ * Groups by (gameId, playerName) and calculates TOTAL EPA across all activity types.
  * Returns top performances sorted by totalEpa descending.
  */
 export function computeSeasonPerformances(
@@ -94,75 +138,96 @@ export function computeSeasonPerformances(
 ): PerformanceRow[] {
   const plays = filterPlays(rawPlays);
 
-  // Group plays by (gameId, playerName, role)
-  const groups = new Map<GroupKey, FilteredPlay[]>();
+  // Build player info map for ID and team lookups
+  const playerInfoMap = buildPlayerInfoMap(plays);
 
-  for (const play of plays) {
-    // QB: dropback plays grouped by passer
-    if (play.qb_dropback === 1 && play.passer_player_name) {
-      const key = makeKey(play.game_id, play.passer_player_name, 'QB');
-      const arr = groups.get(key);
-      if (arr) arr.push(play);
-      else groups.set(key, [play]);
-    }
+  // Group ALL plays by (gameId, playerName) - not by role
+  const playerGamePlays = new Map<string, FilteredPlay[]>();
 
-    // RB: rush attempts (non-QB) grouped by rusher
-    if (play.rush_attempt === 1 && play.qb_dropback === 0 && play.rusher_player_name) {
-      const key = makeKey(play.game_id, play.rusher_player_name, 'RB');
-      const arr = groups.get(key);
-      if (arr) arr.push(play);
-      else groups.set(key, [play]);
-    }
-
-    // WR/TE: pass targets grouped by receiver, classified by roster position
-    if (play.pass_attempt === 1 && play.receiver_player_name) {
-      const recRole: PlayerRole = positionMap?.get(play.receiver_player_id ?? '') === 'TE' ? 'TE' : 'WR';
-      const key = makeKey(play.game_id, play.receiver_player_name, recRole);
-      const arr = groups.get(key);
-      if (arr) arr.push(play);
-      else groups.set(key, [play]);
-    }
-  }
-
-  // Build a secondary index: all plays involving a player in a game,
-  // keyed by "gameId|playerName". This lets us populate ALL counting stat
-  // columns (passing, rushing, receiving) for every row, not just the
-  // role-specific plays. E.g. a QB's rushing stats, an RB's receiving stats.
-  const allPlayerGamePlays = new Map<string, FilteredPlay[]>();
   for (const play of plays) {
     const names = new Set<string>();
     if (play.passer_player_name) names.add(play.passer_player_name);
     if (play.rusher_player_name) names.add(play.rusher_player_name);
     if (play.receiver_player_name) names.add(play.receiver_player_name);
+
     for (const name of names) {
-      const pgKey = `${play.game_id}|${name}`;
-      const arr = allPlayerGamePlays.get(pgKey);
+      const key = `${play.game_id}|${name}`;
+      const arr = playerGamePlays.get(key);
       if (arr) arr.push(play);
-      else allPlayerGamePlays.set(pgKey, [play]);
+      else playerGamePlays.set(key, [play]);
     }
   }
 
-  // Compute metrics for each group
+  // Compute metrics for each player-game
   const performances: PerformanceRow[] = [];
 
-  for (const [key, groupPlays] of groups) {
-    const { gameId, playerName, role } = parseKey(key);
-    // Require minimum 5 plays to filter noise
-    if (groupPlays.length < 5) continue;
+  for (const [key, allPlays] of playerGamePlays) {
+    const [gameId, playerName] = key.split('|');
 
-    const team = groupPlays[0].posteam;
+    // Get player info
+    const info = playerInfoMap.get(key);
+    if (!info) continue;
 
-    // Get ALL plays this player was involved in for this game
-    const allPlays = allPlayerGamePlays.get(`${gameId}|${playerName}`) ?? [];
+    const { playerId, team } = info;
 
-    // Passing stats: plays where this player was the passer
-    const passingPlays = allPlays.filter((p) => p.passer_player_name === playerName && p.qb_dropback === 1);
-    // Rushing stats: plays where this player was the rusher
-    // Includes both designed runs (rush_attempt=1, qb_dropback=0) AND QB scrambles
-    // (rusher_player_name set with rushing_yards, even on qb_dropback=1 plays)
-    const rushingPlays = allPlays.filter((p) => p.rusher_player_name === playerName && p.rushing_yards !== null);
-    // Receiving stats: plays where this player was the receiver
-    const receivingPlays = allPlays.filter((p) => p.receiver_player_name === playerName && p.pass_attempt === 1);
+    // Determine role from roster position
+    const rosterPosition = playerId ? positionMap?.get(playerId) : undefined;
+
+    // Skip non-skill positions (we don't want defensive players who recovered fumbles, etc.)
+    if (!isSkillPosition(rosterPosition)) {
+      // If we don't have a roster position, try to infer from play types
+      // But only include if they have significant involvement
+      const hasPassingPlays = allPlays.some(p => p.passer_player_name === playerName);
+      const hasRushingPlays = allPlays.some(p => p.rusher_player_name === playerName);
+      const hasReceivingPlays = allPlays.some(p => p.receiver_player_name === playerName);
+
+      if (!hasPassingPlays && !hasRushingPlays && !hasReceivingPlays) continue;
+    }
+
+    const role = positionToRole(rosterPosition);
+
+    // Separate plays by involvement type for counting stats
+    const passingPlays = allPlays.filter(p => p.passer_player_name === playerName && p.qb_dropback === 1);
+    const rushingPlays = allPlays.filter(p => p.rusher_player_name === playerName && p.rushing_yards !== null);
+    const receivingPlays = allPlays.filter(p => p.receiver_player_name === playerName && p.pass_attempt === 1);
+
+    // Calculate TOTAL EPA from all plays where this player contributed
+    // Each play's EPA should only count once, attributed to the primary actor
+    const epaPlays: FilteredPlay[] = [];
+    const seenPlayIds = new Set<string>();
+
+    // For passing plays, passer gets the EPA
+    for (const play of passingPlays) {
+      const playKey = `${play.game_id}|${play.desc}`;
+      if (!seenPlayIds.has(playKey)) {
+        epaPlays.push(play);
+        seenPlayIds.add(playKey);
+      }
+    }
+
+    // For rushing plays (non-QB), rusher gets the EPA
+    for (const play of rushingPlays) {
+      // Only count if this isn't already counted as a passing play (QB scrambles)
+      if (play.qb_dropback !== 1) {
+        const playKey = `${play.game_id}|${play.desc}`;
+        if (!seenPlayIds.has(playKey)) {
+          epaPlays.push(play);
+          seenPlayIds.add(playKey);
+        }
+      }
+    }
+
+    // For receiving plays, receiver gets the EPA (but only if not already a passing play for this player)
+    for (const play of receivingPlays) {
+      const playKey = `${play.game_id}|${play.desc}`;
+      if (!seenPlayIds.has(playKey)) {
+        epaPlays.push(play);
+        seenPlayIds.add(playKey);
+      }
+    }
+
+    // Require minimum 5 EPA-contributing plays to filter noise
+    if (epaPlays.length < 5) continue;
 
     const base: PerformanceRow = {
       playerName,
@@ -171,32 +236,32 @@ export function computeSeasonPerformances(
       gameId,
       week: parseWeek(gameId),
       opponent: deriveOpponent(gameId, team),
-      // EPA metrics are still computed from the role-specific group plays
-      totalEpa: sumNullable(groupPlays.map((p) => p.epa)),
-      epaPerPlay: mean(groupPlays.map((p) => p.epa)),
-      successRate: mean(groupPlays.map((p) => p.success)),
-      firstDownPct: mean(groupPlays.map((p) => p.first_down)),
-      plays: groupPlays.length,
+      // Total EPA from all contributing plays
+      totalEpa: sumNullable(epaPlays.map(p => p.epa)),
+      epaPerPlay: mean(epaPlays.map(p => p.epa)),
+      successRate: mean(epaPlays.map(p => p.success)),
+      firstDownPct: mean(epaPlays.map(p => p.first_down)),
+      plays: epaPlays.length,
     };
 
-    // Populate ALL counting stats from the player's full game involvement
+    // Populate ALL counting stats
     if (passingPlays.length > 0) {
-      base.completions = sumCount(passingPlays.map((p) => p.complete_pass));
+      base.completions = sumCount(passingPlays.map(p => p.complete_pass));
       base.passAttempts = passingPlays.length;
-      base.passingYards = sumNullable(passingPlays.map((p) => p.passing_yards)) ?? 0;
-      base.passTDs = sumCount(passingPlays.map((p) => p.pass_touchdown));
-      base.interceptions = sumCount(passingPlays.map((p) => p.interception));
+      base.passingYards = sumNullable(passingPlays.map(p => p.passing_yards)) ?? 0;
+      base.passTDs = sumCount(passingPlays.map(p => p.pass_touchdown));
+      base.interceptions = sumCount(passingPlays.map(p => p.interception));
     }
     if (rushingPlays.length > 0) {
       base.carries = rushingPlays.length;
-      base.rushingYards = sumNullable(rushingPlays.map((p) => p.rushing_yards)) ?? 0;
-      base.rushTDs = sumCount(rushingPlays.map((p) => p.rush_touchdown));
+      base.rushingYards = sumNullable(rushingPlays.map(p => p.rushing_yards)) ?? 0;
+      base.rushTDs = sumCount(rushingPlays.map(p => p.rush_touchdown));
     }
     if (receivingPlays.length > 0) {
       base.targets = receivingPlays.length;
-      base.receptions = sumCount(receivingPlays.map((p) => p.complete_pass));
-      base.receivingYards = sumNullable(receivingPlays.map((p) => p.receiving_yards)) ?? 0;
-      base.receivingTDs = sumCount(receivingPlays.map((p) => p.pass_touchdown));
+      base.receptions = sumCount(receivingPlays.map(p => p.complete_pass));
+      base.receivingYards = sumNullable(receivingPlays.map(p => p.receiving_yards)) ?? 0;
+      base.receivingTDs = sumCount(receivingPlays.map(p => p.pass_touchdown));
     }
 
     performances.push(base);
@@ -228,7 +293,7 @@ export function computeSeasonPerformances(
   }
 
   // Build final list, re-sorted by EPA
-  const result = [...selected].map((i) => performances[i]);
+  const result = [...selected].map(i => performances[i]);
   result.sort((a, b) => (b.totalEpa ?? -Infinity) - (a.totalEpa ?? -Infinity));
 
   return result;

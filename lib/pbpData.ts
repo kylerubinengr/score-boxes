@@ -26,7 +26,9 @@ export interface PlayRow {
   aborted_play: number | null;
   yards_gained: number | null;
   passer_player_name: string | null;
+  passer_player_id: string | null;
   rusher_player_name: string | null;
+  rusher_player_id: string | null;
   receiver_player_name: string | null;
   rush_attempt: number | null;
   pass_attempt: number | null;
@@ -83,7 +85,9 @@ function parsePlayRow(row: Record<string, string>): PlayRow {
     aborted_play: parseNumeric(row.aborted_play),
     yards_gained: parseNumeric(row.yards_gained),
     passer_player_name: row.passer_player_name || null,
+    passer_player_id: row.passer_player_id || null,
     rusher_player_name: row.rusher_player_name || null,
+    rusher_player_id: row.rusher_player_id || null,
     receiver_player_name: row.receiver_player_name || null,
     rush_attempt: parseNumeric(row.rush_attempt),
     pass_attempt: parseNumeric(row.pass_attempt),
