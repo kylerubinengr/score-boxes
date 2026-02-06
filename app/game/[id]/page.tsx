@@ -77,7 +77,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
       {isFinal ? (
         <div className="mt-8 border-t border-slate-100 pt-8 dark:border-slate-800">
             {game.scoringPlays && game.linescores && (
-                 <ScoringSummary 
+                 <ScoringSummary
                     homeTeam={game.homeTeam}
                     awayTeam={game.awayTeam}
                     scoringPlays={game.scoringPlays}
@@ -87,6 +87,9 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
                     awayScore={game.awayScore || 0}
                     drives={game.drives}
                     comparison={matchupComparison}
+                    season={game.season}
+                    week={game.week}
+                    seasonType={game.seasonType}
                  />
             )}
 

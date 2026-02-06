@@ -43,6 +43,16 @@ export interface PlayRow {
   yardline_100: number | null;  // Distance from opponent's end zone (1-99)
   touchdown: number | null;     // 1 if play resulted in TD
   field_goal_result: string | null;  // 'made', 'missed', 'blocked', or null
+  // Win probability chart fields
+  qtr: number | null;                    // Quarter (1-4, 5 for OT)
+  game_seconds_remaining: number | null; // Seconds remaining in game
+  desc: string | null;                   // Play description text
+  // Score fields for WP tooltip
+  total_home_score: number | null;       // Home team score at this point
+  total_away_score: number | null;       // Away team score at this point
+  // Direct home_wp field from nflverse (more accurate than converting from wp)
+  home_wp: number | null;                // Home team WP at start of play (0-1)
+  home_wp_post: number | null;           // Home team WP at end of play (0-1)
 }
 
 function parseNumeric(val: string | undefined | null): number | null {
@@ -89,6 +99,16 @@ function parsePlayRow(row: Record<string, string>): PlayRow {
     yardline_100: parseNumeric(row.yardline_100),
     touchdown: parseNumeric(row.touchdown),
     field_goal_result: row.field_goal_result || null,
+    // Win probability chart fields
+    qtr: parseNumeric(row.qtr),
+    game_seconds_remaining: parseNumeric(row.game_seconds_remaining),
+    desc: row.desc || null,
+    // Score fields for WP tooltip
+    total_home_score: parseNumeric(row.total_home_score),
+    total_away_score: parseNumeric(row.total_away_score),
+    // Direct home_wp fields from nflverse
+    home_wp: parseNumeric(row.home_wp),
+    home_wp_post: parseNumeric(row.home_wp_post),
   };
 }
 

@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Team, ScoringPlay, Linescore, Drive } from "@/types/nfl";
 import { MatchupComparison } from "@/services/matchupService";
 import { SafeImage } from "../common/SafeImage";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { AdvancedMatchupEngine } from "./AdvancedMatchupEngine";
 import { LiveDriveChart } from "./LiveDriveChart";
+import { WinProbabilityChart } from "./WinProbabilityChart";
+import type { WinProbabilityData } from "@/types/winProbability";
 
 interface ScoringSummaryProps {
     homeTeam: Team;
@@ -19,6 +21,10 @@ interface ScoringSummaryProps {
     drives?: Drive[];
     comparison?: MatchupComparison | null;
     isLive?: boolean;
+    // Win Probability props
+    season?: number;
+    week?: number;
+    seasonType?: number;
 }
 
 const getOrdinal = (n: number) => {
@@ -150,11 +156,44 @@ export function ScoringSummary({
     awayScore,
     drives,
     comparison,
-    isLive
+    isLive,
+    season,
+    week,
+    seasonType
 }: ScoringSummaryProps) {
-    const [activeTab, setActiveTab] = useState<'matchup' | 'summary' | 'pbp'>('summary');
+    const [activeTab, setActiveTab] = useState<'matchup' | 'summary' | 'pbp' | 'wp'>('summary');
     const [selectedQuarter, setSelectedQuarter] = useState<number | 'all'>('all');
     const [isMobile, setIsMobile] = useState(false);
+
+    // Win Probability state
+    const [wpData, setWpData] = useState<WinProbabilityData | null>(null);
+    const [wpLoading, setWpLoading] = useState(false);
+    const [wpError, setWpError] = useState<string | null>(null);
+
+    // Fetch Win Probability data when tab is selected
+    useEffect(() => {
+        if (activeTab === 'wp' && !wpData && !wpLoading && season && week) {
+            setWpLoading(true);
+            setWpError(null);
+
+            const params = new URLSearchParams({
+                season: season.toString(),
+                week: week.toString(),
+                seasonType: (seasonType || 2).toString(),
+                away: awayTeam.abbreviation,
+                home: homeTeam.abbreviation,
+            });
+
+            fetch(`/api/win-probability?${params}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Win probability data not available');
+                    return res.json();
+                })
+                .then((data: WinProbabilityData) => setWpData(data))
+                .catch(err => setWpError(err.message))
+                .finally(() => setWpLoading(false));
+        }
+    }, [activeTab, wpData, wpLoading, season, week, seasonType, awayTeam.abbreviation, homeTeam.abbreviation]);
 
     // Track window width for mobile detection
     React.useEffect(() => {
@@ -243,6 +282,15 @@ export function ScoringSummary({
                     <span className="hidden sm:inline">Play by Play</span>
                     <span className="sm:hidden">Play by Play</span>
                 </button>
+                {season && week && (
+                    <button
+                        onClick={() => setActiveTab('wp')}
+                        className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide sm:tracking-widest transition-colors ${activeTab === 'wp' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}
+                    >
+                        <span className="hidden sm:inline">Win Probability</span>
+                        <span className="sm:hidden">Win Prob</span>
+                    </button>
+                )}
             </div>
 
             {/* Content Area - Scrollable */}
@@ -456,7 +504,7 @@ export function ScoringSummary({
                             </div>
                         </div>
                     )
-                ) : (
+                ) : activeTab === 'pbp' ? (
                     <div className="bg-slate-50 dark:bg-slate-950 min-h-full">
                         {!drives || drives.length === 0 ? (
                             <div className="p-12 text-center">
@@ -472,16 +520,16 @@ export function ScoringSummary({
                                     const currentQ = drive.startQuarter || drive.endQuarter || 1;
                                     const prevDrive = drives[index - 1];
                                     const prevQ = prevDrive ? (prevDrive.startQuarter || prevDrive.endQuarter || 1) : -1;
-                                    
+
                                     const showHeader = index === 0 || currentQ !== prevQ;
-                                    
+
                                     return (
                                         <React.Fragment key={drive.id}>
                                             {showHeader && <QuarterHeader quarter={currentQ} />}
-                                            <DriveItem 
-                                                drive={drive} 
-                                                homeAbbr={homeTeam.abbreviation} 
-                                                awayAbbr={awayTeam.abbreviation} 
+                                            <DriveItem
+                                                drive={drive}
+                                                homeAbbr={homeTeam.abbreviation}
+                                                awayAbbr={awayTeam.abbreviation}
                                             />
                                         </React.Fragment>
                                     );
@@ -489,7 +537,30 @@ export function ScoringSummary({
                             </div>
                         )}
                     </div>
-                )}
+                ) : activeTab === 'wp' ? (
+                    <div className="p-4">
+                        {wpLoading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                        Loading win probability...
+                                    </p>
+                                </div>
+                            </div>
+                        ) : wpError ? (
+                            <div className="text-center py-12">
+                                <p className="text-sm text-slate-400 dark:text-slate-500 italic">{wpError}</p>
+                            </div>
+                        ) : wpData ? (
+                            <WinProbabilityChart
+                                data={wpData}
+                                homeAbbr={homeTeam.abbreviation}
+                                awayAbbr={awayTeam.abbreviation}
+                            />
+                        ) : null}
+                    </div>
+                ) : null}
             </div>
         </div>
     );
