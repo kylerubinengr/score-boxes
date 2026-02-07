@@ -35,3 +35,9 @@ next-env.d.ts
 
 # project specific
 dev.log
+
+# Screenshots
+Screenshot*.png
+
+# Python data scripts (local tooling, not part of Next.js app)
+nflfastr/

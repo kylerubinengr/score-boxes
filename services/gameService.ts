@@ -92,13 +92,6 @@ export async function getGamesByWeek(
         isIndoor = venue.indoor;
       }
 
-      /* Weather fetching commented out
-      if (lat && lon && !isFinal) {
-        const fetchedWeather = await getWeather(lat.toString(), lon.toString(), event.date);
-        weather = isIndoor ? { ...fetchedWeather, condition: "Dome" } : fetchedWeather;
-      }
-      */
-
       const homeScore = parseInt(homeComp.score) || 0;
       const awayScore = parseInt(awayComp.score) || 0;
       const winnerId = isFinal ? (homeScore > awayScore ? homeTeam.id : (awayScore > homeScore ? awayTeam.id : undefined)) : undefined;

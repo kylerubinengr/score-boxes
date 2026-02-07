@@ -239,3 +239,81 @@ export type BracketStructure = {
   rounds: BracketRoundData[];
   lastUpdated: number;
 };
+
+// ── Player Search & Stats Types ──────────────────────────────────────
+
+export type PlayerPosition = 'QB' | 'RB' | 'WR' | 'TE' | 'FB' | 'K';
+
+export type PlayerSearchResult = {
+  name: string;
+  slug: string;
+  position: string;
+  team: string;
+  teamLogo: string;
+  headshot: string;
+};
+
+export type PlayerGameStats = {
+  week: number;
+  season: number;
+  opponent: string;
+  completions: number;
+  attempts: number;
+  passingYards: number;
+  passingTds: number;
+  interceptions: number;
+  carries: number;
+  rushingYards: number;
+  rushingTds: number;
+  receptions: number;
+  targets: number;
+  receivingYards: number;
+  receivingTds: number;
+  fantasyPoints: number;
+  passerRating: number;
+  sacks: number;
+  sackYards: number;
+  rushingFumbles: number;
+  rushingFumblesLost: number;
+  receivingFumbles: number;
+  receivingFumblesLost: number;
+  specialTeamsTds: number;
+  // EPA metrics (from play-by-play data)
+  totalEpa?: number;
+  epaPerPlay?: number;
+  plays?: number;
+};
+
+export type PlayerSeasonSummary = {
+  gamesPlayed: number;
+  // Passing
+  completions: number;
+  attempts: number;
+  passingYards: number;
+  passingTds: number;
+  interceptions: number;
+  completionPct: number;
+  passerRating: number;
+  // Rushing
+  carries: number;
+  rushingYards: number;
+  rushingTds: number;
+  yardsPerCarry: number;
+  // Receiving
+  receptions: number;
+  targets: number;
+  receivingYards: number;
+  receivingTds: number;
+  yardsPerReception: number;
+};
+
+export type PlayerDetail = {
+  name: string;
+  slug: string;
+  position: string;
+  team: string;
+  teamLogo: string;
+  headshot: string;
+  games: PlayerGameStats[];
+  season: PlayerSeasonSummary;
+};

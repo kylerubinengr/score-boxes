@@ -38,6 +38,7 @@ export function TeamSelector({ currentTeam }: { currentTeam?: string }) {
                 <Link
                   key={abbr}
                   href={buildTeamUrl(selectedSeason, abbr)}
+                  prefetch={false}
                   title={TEAM_NAMES[abbr]}
                   className={`
                     w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center

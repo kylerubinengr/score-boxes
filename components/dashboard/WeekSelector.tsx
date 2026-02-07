@@ -142,6 +142,7 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string }) 
           <Link
             key={week}
             href={buildScoresUrl(selectedSeason, week)}
+            prefetch={false}
             className={`relative px-4 py-3 sm:px-3 sm:py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
               week === currentWeek && !isPlayoffWeek
                 ? "bg-blue-600 text-white shadow-md dark:bg-blue-500"
@@ -185,6 +186,7 @@ export function WeekSelector({ currentWeek }: { currentWeek: number | string }) 
             <Link
               key={playoff.slug}
               href={buildScoresUrl(selectedSeason, playoff.slug)}
+              prefetch={false}
               className={`relative px-4 py-3 sm:px-3 sm:py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
                 isActive
                   ? "bg-blue-600 text-white shadow-md dark:bg-blue-500"

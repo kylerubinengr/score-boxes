@@ -77,6 +77,7 @@ export function GameCard({ game, showWeek = false }: { game: Game; showWeek?: bo
       return (
         <Link
           href={`/game/${game.id}`}
+          prefetch={false}
           onClick={handleGameClick}
           className="block bg-white/80 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg hover:border-blue-500 hover:scale-[1.01] transition-all duration-300 overflow-hidden flex flex-col h-full dark:bg-slate-900 dark:border-slate-800 dark:hover:border-blue-500"
         >

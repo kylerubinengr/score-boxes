@@ -49,7 +49,22 @@
       "WebFetch(domain:nflreadr.nflverse.com)",
       "WebFetch(domain:nflfastr.com)",
       "WebFetch(domain:github.com)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run test)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard status -u)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard diff --stat)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard log --oneline -5)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard diff --stat -- app/api/player-stats/route.ts app/player/[slug]/page.tsx components/layout/SearchBar.tsx services/playerService.ts components/dashboard/GameCard.tsx components/dashboard/HistoricalGameCard.tsx components/dashboard/TeamSelector.tsx components/dashboard/WeekSelector.tsx components/layout/Navbar.tsx types/nfl.ts)",
+      "Bash(for f in app/api/player-stats/route.ts app/player/[slug]/page.tsx components/layout/SearchBar.tsx services/playerService.ts)",
+      "Bash(do echo \"NEW: $f\")",
+      "Bash(done)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard add .gitignore CLEANUP_SUMMARY.md TEST_PLAN.md \"Screenshot 2026-01-07 at 2.52.47 PM.png\" \"Screenshot 2026-01-07 at 2.53.11 PM.png\" \"Screenshot 2026-01-07 at 2.53.26 PM.png\" \"Screenshot 2026-01-07 at 2.58.09 PM.png\" app/api/nfl-stats/route.ts \"app/game/[id]/page.tsx\" docs/archive/HEADER_REFACTOR_SUMMARY.md docs/archive/PHASE_1_IMPLEMENTATION.md docs/archive/PHASE_4_5_SUMMARY.md docs/reviews/CODE_REVIEW_REPORT_2026-01-04.md docs/reviews/PROJECT_STRUCTURE_REVIEW.md next.config.mjs package-lock.json package.json services/gameService.ts services/sumer-sports-service.ts app/error.tsx \"app/game/[id]/error.tsx\" \"app/game/[id]/loading.tsx\" app/not-found.tsx \"app/performances/[season]/layout.tsx\" \"app/performances/[season]/loading.tsx\" \"app/player/[slug]/error.tsx\" \"app/player/[slug]/layout.tsx\" \"app/player/[slug]/loading.tsx\" \"app/scores/[season]/[week]/error.tsx\" \"app/scores/[season]/[week]/layout.tsx\" \"app/scores/[season]/[week]/loading.tsx\" \"app/standings/[season]/layout.tsx\" \"app/standings/[season]/loading.tsx\" \"app/team/[season]/[teamAbbr]/layout.tsx\" vercel.json app/api/player-stats/route.ts)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard status --porcelain)",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard ls-files:*)",
+      "Bash(xargs -I {} git -C /Users/kylerubin/nfl-dashboard add -u \"{}\")",
+      "Bash(git -C /Users/kylerubin/nfl-dashboard add -u)"
     ]
   }
 }

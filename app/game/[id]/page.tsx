@@ -1,18 +1,26 @@
+import type { Metadata } from "next";
 import { getGameById, getGamesByWeek } from "@/services/gameService";
 import { getMatchupComparison } from "@/services/matchupService";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, MapPin, Wind, Thermometer, Home, TrendingUp } from "lucide-react";
 import { ScoringSummary } from "@/components/game/ScoringSummary";
 import { AdvancedMatchupEngine } from "@/components/game/AdvancedMatchupEngine";
 import { GameDetailHeader } from "@/components/game/GameDetailHeader";
 import { GameTabManager } from "@/components/game/GameTabManager";
 import { BoxScoreSection } from "@/components/game/BoxScoreSection";
-import { formatGameTime } from "@/lib/utils";
-import { SafeImage } from "@/components/common/SafeImage";
 import LiveGameView from "@/components/game/LiveGameView";
 
 export const dynamicParams = true;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const game = await getGameById(id);
+  if (!game) {
+    return { title: "Game Not Found | Score Boxes" };
+  }
+  const title = `${game.awayTeam.abbreviation} vs ${game.homeTeam.abbreviation} — Week ${game.week} | Score Boxes`;
+  const description = `${game.awayTeam.name} at ${game.homeTeam.name}, Week ${game.week} ${game.season} NFL season.`;
+  return { title, description };
+}
 
 export async function generateStaticParams() {
   const weeks = Array.from({ length: 18 }, (_, i) => i + 1);
@@ -106,60 +114,11 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         </div>
       ) : (
         <div className="space-y-8">
-            {/* Top Row: Weather & Betting Side-by-Side - COMMENTED OUT
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                // Weather
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800 h-full">
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800 dark:text-slate-200">
-                        <Wind className="w-5 h-5 text-blue-500" />
-                        Game Conditions
-                    </h3>
-                    {game.indoor ? (
-                        <div className="bg-slate-50 p-4 rounded-lg text-center border border-slate-200 dark:bg-slate-800 dark:border-slate-700 h-[140px] flex flex-col justify-center items-center">
-                            <Home className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                            <p className="font-bold text-slate-700 dark:text-slate-200">Indoor (Dome)</p>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold mt-1 tracking-wider dark:text-slate-400">Controlled Environment</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-3 h-[140px]">
-                            <div className="p-3 bg-slate-50 rounded-lg text-center dark:bg-slate-800 flex flex-col justify-center">
-                                <Thermometer className="w-4 h-4 mx-auto mb-1 text-slate-400"/>
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase">Temp</span>
-                                <span className="font-black text-slate-900 text-lg dark:text-slate-200">{game.weather.temperature}°F</span>
-                            </div>
-                            <div className="p-3 bg-slate-50 rounded-lg text-center dark:bg-slate-800 flex flex-col justify-center">
-                                <Home className="w-4 h-4 mx-auto mb-1 text-slate-400"/>
-                                <span className="block text-[10px] font-bold text-slate-400 uppercase">Sky</span>
-                                <span className="font-black text-slate-900 text-xs dark:text-slate-200">{game.weather.condition}</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                // Betting
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800 h-full">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-purple-600" />
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Betting Intelligence</h3>
-                        </div>
-                        {hasImpliedTotals && (
-                             <div className="text-[10px] font-black bg-slate-100 px-2 py-1 rounded text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                IMPLIED: {game.awayTeam.abbreviation} {impliedAwayScore.toFixed(0)} - {game.homeTeam.abbreviation} {impliedHomeScore.toFixed(0)}
-                             </div>
-                        )}
-                    </div>
-                    <OddsTable bookmakers={game.bookmakers} />
-                </div>
-            </div>
-            */}
-
-            {/* Bottom Row: Advanced Matchup Engine */}
             {matchupComparison && (
-                <AdvancedMatchupEngine 
-                    homeTeam={game.homeTeam} 
-                    awayTeam={game.awayTeam} 
-                    comparison={matchupComparison} 
+                <AdvancedMatchupEngine
+                    homeTeam={game.homeTeam}
+                    awayTeam={game.awayTeam}
+                    comparison={matchupComparison}
                 />
             )}
         </div>

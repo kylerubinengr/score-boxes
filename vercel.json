@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "functions": {
+    "app/api/nfl-stats/route.ts": { "maxDuration": 60 },
+    "app/api/player-stats/route.ts": { "maxDuration": 60 },
+    "app/api/advanced-game-stats/route.ts": { "maxDuration": 60 },
+    "app/api/win-probability/route.ts": { "maxDuration": 60 },
+    "app/api/season-performances/route.ts": { "maxDuration": 60 },
+    "app/api/team-stats/route.ts": { "maxDuration": 60 }
+  }
+}

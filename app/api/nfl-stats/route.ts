@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { Octokit } from 'octokit';
+import { Octokit } from '@octokit/rest';
 import Papa from 'papaparse';
+
+export const maxDuration = 60;
 
 // Initialize Octokit, using a GitHub token if available to avoid rate-limiting
 const octokit = new Octokit({
@@ -13,7 +15,7 @@ async function getLatestStatsUrl() {
 
   try {
     console.log(`[API Route] Attempting to get release by tag: ${TARGET_TAG}...`);
-    const release = await octokit.rest.repos.getReleaseByTag({
+    const release = await octokit.repos.getReleaseByTag({
       owner: 'nflverse',
       repo: 'nflverse-data',
       tag: TARGET_TAG,
@@ -42,7 +44,7 @@ async function getLatestStatsUrl() {
 async function getLatestStatsUrlFallback() {
     try {
         console.log("[API Route] Attempting fallback to latest release...");
-        const release = await octokit.rest.repos.getLatestRelease({
+        const release = await octokit.repos.getLatestRelease({
             owner: 'nflverse',
             repo: 'nflverse-data',
         });
@@ -56,7 +58,7 @@ async function getLatestStatsUrlFallback() {
         }
 
         console.warn("[API Route] 'season_stats.csv' not found in latest release fallback. Falling back to 'stats' tag.");
-        const statsRelease = await octokit.rest.repos.getReleaseByTag({
+        const statsRelease = await octokit.repos.getReleaseByTag({
             owner: 'nflverse',
             repo: 'nflverse-data',
             tag: 'stats'
@@ -151,7 +153,10 @@ export async function GET(request: Request) {
         return NextResponse.json({ home: homeStats, away: awayStats, message: "Stats for one or both teams not found in filtered data." }, { status: 200 });
     }
 
-    return NextResponse.json({ home: homeStats, away: awayStats });
+    return NextResponse.json(
+      { home: homeStats, away: awayStats },
+      { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' } }
+    );
   } catch (error: any) {
     console.error("API Route /api/nfl-stats Error:", error); // Log the full error object
     return NextResponse.json({ error: error.message || "An unknown error occurred" }, { status: 500 });

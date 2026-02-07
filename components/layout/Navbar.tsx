@@ -7,6 +7,7 @@ import { Moon, Sun, X, Pin } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef } from "react";
+import { SearchBar } from "@/components/layout/SearchBar";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -72,7 +73,10 @@ export function Navbar() {
         })}
       </div>
 
-      <div className="pb-2 flex-shrink-0">
+      <div className="pb-2 flex-shrink-0 flex items-center gap-2">
+        <div className="hidden md:block">
+          <SearchBar />
+        </div>
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full transition-colors hover:bg-slate-300 dark:hover:bg-slate-800"
