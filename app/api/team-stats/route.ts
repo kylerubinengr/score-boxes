@@ -13,12 +13,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'team query parameter is required' }, { status: 400 });
   }
 
-  const stats = await getTeamStats(team, season);
-  if (!stats) {
+  const result = await getTeamStats(team, season);
+  if (!result) {
     return NextResponse.json({ error: 'Team not found' }, { status: 404 });
   }
 
-  return NextResponse.json(stats, {
+  return NextResponse.json(result, {
     headers: {
       'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
     },

@@ -12,7 +12,7 @@ import { StatusBanner } from "@/components/dashboard/StatusBanner";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { TabSettingsPanel } from "@/components/dashboard/TabSettingsPanel";
 import { TabLimitWarning } from "@/components/ui/TabLimitWarning";
-import { TeamStatsTable } from "@/components/dashboard/TeamStatsTable";
+import { TeamStatsCards } from "@/components/dashboard/team-stats";
 import { useSeason } from "@/context/SeasonContext";
 import { TEAM_NAMES } from "@/constants/teams";
 import { SeasonSelector } from "@/components/dashboard/SeasonSelector";
@@ -109,7 +109,7 @@ export default function TeamPage() {
           <TeamSelector currentTeam={teamAbbr} />
         </div>
 
-        <TeamStatsTable teamAbbr={teamAbbr} season={seasonParam} />
+        <TeamStatsCards teamAbbr={teamAbbr} season={seasonParam} />
 
         <StatusBanner isSnapshot={data.isSnapshot} lastUpdated={data.lastUpdated} />
 

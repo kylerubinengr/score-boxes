@@ -149,14 +149,34 @@ export function AdvancedMatchupEngine({ homeTeam, awayTeam, comparison }: Advanc
         id: "advanced",
         title: "Advanced Metrics",
         rows: [
-            { id: "off_epa", label: "Off EPA/Play", type: "stat", statKey: "offEpa", higherIsBetter: true, 
+            { id: "off_epa", label: "Off EPA/Play", type: "stat", statKey: "offEpa", higherIsBetter: true,
               tooltip: "Expected Points Added per offensive play." },
-            { id: "def_epa", label: "Def EPA/Play", type: "stat", statKey: "defEpa", higherIsBetter: false, 
+            { id: "def_epa", label: "Def EPA/Play", type: "stat", statKey: "defEpa", higherIsBetter: false,
               tooltip: "Expected Points Added allowed per defensive play." },
             { id: "off_succ", label: "Success Rate", type: "stat", statKey: "offSuccess", higherIsBetter: true,
               tooltip: "Percentage of plays that gain expected yardage." },
             { id: "def_succ", label: "Def Success Rate", type: "stat", statKey: "defSuccess", higherIsBetter: false,
               tooltip: "Allowed Success Rate." },
+        ]
+    },
+    {
+        id: "situational",
+        title: "Situational",
+        rows: [
+            { id: "3rd_short", label: "3rd & Short", type: "stat", statKey: "off3rdShortConv", higherIsBetter: true,
+              tooltip: "3rd down conversion rate when 3 or fewer yards to go." },
+            { id: "3rd_med", label: "3rd & Medium", type: "stat", statKey: "off3rdMedConv", higherIsBetter: true,
+              tooltip: "3rd down conversion rate when 4-6 yards to go." },
+            { id: "3rd_long", label: "3rd & Long", type: "stat", statKey: "off3rdLongConv", higherIsBetter: true,
+              tooltip: "3rd down conversion rate when 7+ yards to go." },
+            { id: "4th_down", label: "4th Down", type: "stat", statKey: "off4thDownSuccess", higherIsBetter: true,
+              tooltip: "4th down go-for-it success rate." },
+            { id: "goalline", label: "Goal-to-Go", type: "stat", statKey: "offGoalLineTD", higherIsBetter: true,
+              tooltip: "TD rate on plays inside the opponent's 10-yard line." },
+            { id: "2min", label: "2-Min Drill", type: "stat", statKey: "offTwoMinEpa", higherIsBetter: true,
+              tooltip: "EPA per play in final 2 minutes of each half." },
+            { id: "clutch", label: "Clutch EPA", type: "stat", statKey: "offClutchEpa", higherIsBetter: true,
+              tooltip: "EPA per play when WP is 30-70% in the final 4 minutes of Q4 or overtime." },
         ]
     }
   ];

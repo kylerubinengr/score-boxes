@@ -17,6 +17,7 @@ export interface PlayRow {
   qb_kneel: number | null;
   qb_spike: number | null;
   down: number | null;
+  ydstogo: number | null;
   posteam: string;
   defteam: string;
   season_type: string;
@@ -76,6 +77,7 @@ function parsePlayRow(row: Record<string, string>): PlayRow {
     qb_kneel: parseNumeric(row.qb_kneel),
     qb_spike: parseNumeric(row.qb_spike),
     down: parseNumeric(row.down),
+    ydstogo: parseNumeric(row.ydstogo),
     posteam: row.posteam || '',
     defteam: row.defteam || '',
     season_type: row.season_type || '',

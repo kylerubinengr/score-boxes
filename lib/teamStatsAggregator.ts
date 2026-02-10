@@ -32,6 +32,21 @@ export interface RawTeamStats {
   // Situational stats: Red zone (inside opponent's 20)
   off_redzone_td_rate: number;       // % of red zone trips ending in TD
   def_redzone_td_rate: number;       // % of red zone trips allowed ending in TD
+  // Expanded situational stats
+  off_third_short_conv_rate: number;  // 3rd & Short (<=3 yds) conv %
+  def_third_short_conv_rate: number;
+  off_third_med_conv_rate: number;    // 3rd & Medium (4-6 yds) conv %
+  def_third_med_conv_rate: number;
+  off_third_long_conv_rate: number;   // 3rd & Long (>6 yds) conv %
+  def_third_long_conv_rate: number;
+  off_fourth_down_success_rate: number; // 4th down go-for-it success %
+  def_fourth_down_success_rate: number;
+  off_goalline_td_rate: number;       // Goal-to-go (<=10 yds) TD %
+  def_goalline_td_rate: number;
+  off_two_min_epa: number;            // 2-minute drill EPA/play
+  def_two_min_epa: number;
+  off_clutch_epa: number;             // Clutch: WP 30-70% in final 4 min of Q4 or OT
+  def_clutch_epa: number;
 }
 
 interface Accumulator {
@@ -58,6 +73,21 @@ interface Accumulator {
   // Red zone tracking (drive-level, approximated by play inside 20)
   redZonePlays: number;
   redZoneTDs: number;
+  // Expanded situational tracking
+  thirdShortAttempts: number;
+  thirdShortConversions: number;
+  thirdMedAttempts: number;
+  thirdMedConversions: number;
+  thirdLongAttempts: number;
+  thirdLongConversions: number;
+  fourthDownAttempts: number;
+  fourthDownSuccesses: number;
+  goalLinePlays: number;
+  goalLineTDs: number;
+  twoMinEpaSum: number;
+  twoMinEpaCount: number;
+  clutchEpaSum: number;
+  clutchEpaCount: number;
 }
 
 function newAccumulator(): Accumulator {
@@ -73,6 +103,13 @@ function newAccumulator(): Accumulator {
     passPlays: 0, totalPlays: 0,
     thirdDownAttempts: 0, thirdDownConversions: 0,
     redZonePlays: 0, redZoneTDs: 0,
+    thirdShortAttempts: 0, thirdShortConversions: 0,
+    thirdMedAttempts: 0, thirdMedConversions: 0,
+    thirdLongAttempts: 0, thirdLongConversions: 0,
+    fourthDownAttempts: 0, fourthDownSuccesses: 0,
+    goalLinePlays: 0, goalLineTDs: 0,
+    twoMinEpaSum: 0, twoMinEpaCount: 0,
+    clutchEpaSum: 0, clutchEpaCount: 0,
   };
 }
 
@@ -117,9 +154,13 @@ export function computeSeasonTeamStats(plays: PlayRow[]): Record<string, RawTeam
     const yds = play.yards_gained ?? 0;
     const success = play.success ?? 0;
     const down = play.down;
+    const ydstogo = play.ydstogo;
     const firstDown = play.first_down ?? 0;
     const yardline = play.yardline_100;
     const isTouchdown = play.touchdown === 1;
+    const gameSecsRemaining = play.game_seconds_remaining;
+    const quarter = play.qtr;
+    const homeWp = play.home_wp;
 
     // Offensive accumulation (group by posteam)
     let off = offense.get(play.posteam);
@@ -158,6 +199,41 @@ export function computeSeasonTeamStats(plays: PlayRow[]): Record<string, RawTeam
       if (isTouchdown) {
         off.redZoneTDs++;
       }
+    }
+    // 3rd down distance splits (offensive)
+    if (down === 3 && ydstogo !== null) {
+      if (ydstogo <= 3) {
+        off.thirdShortAttempts++;
+        if (firstDown === 1 || isTouchdown) off.thirdShortConversions++;
+      } else if (ydstogo <= 6) {
+        off.thirdMedAttempts++;
+        if (firstDown === 1 || isTouchdown) off.thirdMedConversions++;
+      } else {
+        off.thirdLongAttempts++;
+        if (firstDown === 1 || isTouchdown) off.thirdLongConversions++;
+      }
+    }
+    // 4th down tracking (offensive)
+    if (down === 4) {
+      off.fourthDownAttempts++;
+      if (success === 1) off.fourthDownSuccesses++;
+    }
+    // Goal-to-go tracking (inside 10, offensive)
+    if (yardline !== null && yardline <= 10) {
+      off.goalLinePlays++;
+      if (isTouchdown) off.goalLineTDs++;
+    }
+    // 2-minute drill EPA (offensive)
+    if (gameSecsRemaining !== null && gameSecsRemaining <= 120 && (quarter === 2 || quarter === 4)) {
+      off.twoMinEpaSum += epa;
+      off.twoMinEpaCount++;
+    }
+    // Clutch EPA: WP between 30-70% AND final 4 minutes of Q4 or OT (offensive)
+    if (homeWp !== null && Math.abs(homeWp - 0.5) < 0.2 &&
+        gameSecsRemaining !== null && quarter !== null &&
+        ((quarter === 4 && gameSecsRemaining <= 240) || quarter === 5)) {
+      off.clutchEpaSum += epa;
+      off.clutchEpaCount++;
     }
 
     // Defensive accumulation (group by defteam)
@@ -198,6 +274,41 @@ export function computeSeasonTeamStats(plays: PlayRow[]): Record<string, RawTeam
         def.redZoneTDs++;
       }
     }
+    // 3rd down distance splits (defensive)
+    if (down === 3 && ydstogo !== null) {
+      if (ydstogo <= 3) {
+        def.thirdShortAttempts++;
+        if (firstDown === 1 || isTouchdown) def.thirdShortConversions++;
+      } else if (ydstogo <= 6) {
+        def.thirdMedAttempts++;
+        if (firstDown === 1 || isTouchdown) def.thirdMedConversions++;
+      } else {
+        def.thirdLongAttempts++;
+        if (firstDown === 1 || isTouchdown) def.thirdLongConversions++;
+      }
+    }
+    // 4th down tracking (defensive)
+    if (down === 4) {
+      def.fourthDownAttempts++;
+      if (success === 1) def.fourthDownSuccesses++;
+    }
+    // Goal-to-go tracking (inside 10, defensive)
+    if (yardline !== null && yardline <= 10) {
+      def.goalLinePlays++;
+      if (isTouchdown) def.goalLineTDs++;
+    }
+    // 2-minute drill EPA (defensive)
+    if (gameSecsRemaining !== null && gameSecsRemaining <= 120 && (quarter === 2 || quarter === 4)) {
+      def.twoMinEpaSum += epa;
+      def.twoMinEpaCount++;
+    }
+    // Clutch EPA: WP between 30-70% AND final 4 minutes of Q4 or OT (defensive)
+    if (homeWp !== null && Math.abs(homeWp - 0.5) < 0.2 &&
+        gameSecsRemaining !== null && quarter !== null &&
+        ((quarter === 4 && gameSecsRemaining <= 240) || quarter === 5)) {
+      def.clutchEpaSum += epa;
+      def.clutchEpaCount++;
+    }
   }
 
   // Merge offense + defense into final per-team stats
@@ -235,6 +346,21 @@ export function computeSeasonTeamStats(plays: PlayRow[]): Record<string, RawTeam
       def_third_down_conv_rate: def.thirdDownAttempts > 0 ? (def.thirdDownConversions / def.thirdDownAttempts) * 100 : 0,
       off_redzone_td_rate: off.redZonePlays > 0 ? (off.redZoneTDs / off.redZonePlays) * 100 : 0,
       def_redzone_td_rate: def.redZonePlays > 0 ? (def.redZoneTDs / def.redZonePlays) * 100 : 0,
+      // Expanded situational stats
+      off_third_short_conv_rate: off.thirdShortAttempts > 0 ? (off.thirdShortConversions / off.thirdShortAttempts) * 100 : 0,
+      def_third_short_conv_rate: def.thirdShortAttempts > 0 ? (def.thirdShortConversions / def.thirdShortAttempts) * 100 : 0,
+      off_third_med_conv_rate: off.thirdMedAttempts > 0 ? (off.thirdMedConversions / off.thirdMedAttempts) * 100 : 0,
+      def_third_med_conv_rate: def.thirdMedAttempts > 0 ? (def.thirdMedConversions / def.thirdMedAttempts) * 100 : 0,
+      off_third_long_conv_rate: off.thirdLongAttempts > 0 ? (off.thirdLongConversions / off.thirdLongAttempts) * 100 : 0,
+      def_third_long_conv_rate: def.thirdLongAttempts > 0 ? (def.thirdLongConversions / def.thirdLongAttempts) * 100 : 0,
+      off_fourth_down_success_rate: off.fourthDownAttempts > 0 ? (off.fourthDownSuccesses / off.fourthDownAttempts) * 100 : 0,
+      def_fourth_down_success_rate: def.fourthDownAttempts > 0 ? (def.fourthDownSuccesses / def.fourthDownAttempts) * 100 : 0,
+      off_goalline_td_rate: off.goalLinePlays > 0 ? (off.goalLineTDs / off.goalLinePlays) * 100 : 0,
+      def_goalline_td_rate: def.goalLinePlays > 0 ? (def.goalLineTDs / def.goalLinePlays) * 100 : 0,
+      off_two_min_epa: off.twoMinEpaCount > 0 ? off.twoMinEpaSum / off.twoMinEpaCount : 0,
+      def_two_min_epa: def.twoMinEpaCount > 0 ? def.twoMinEpaSum / def.twoMinEpaCount : 0,
+      off_clutch_epa: off.clutchEpaCount > 0 ? off.clutchEpaSum / off.clutchEpaCount : 0,
+      def_clutch_epa: def.clutchEpaCount > 0 ? def.clutchEpaSum / def.clutchEpaCount : 0,
     };
   }
 
