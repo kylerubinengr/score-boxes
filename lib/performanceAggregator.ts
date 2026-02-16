@@ -68,9 +68,6 @@ function filterPlays(rows: PlayRow[]): FilteredPlay[] {
   return rows
     .filter(
       (r) =>
-        r.wp !== null &&
-        r.wp >= 0.05 &&
-        r.wp <= 0.95 &&
         (r.play_type === 'pass' || r.play_type === 'run') &&
         r.qb_kneel === 0 &&
         r.qb_spike === 0

@@ -72,9 +72,19 @@ export function TeamStatsCards({
     };
   }, [teamAbbr, season]);
 
-  if (isLoading) return <div className="p-8 bg-blue-100 text-blue-900 text-xl font-bold rounded-lg mb-6 border-4 border-blue-500">LOADING TEAM STATS...</div>;
-  if (error) return <div className="p-8 bg-red-100 text-red-900 text-xl font-bold rounded-lg mb-6 border-4 border-red-500">ERROR: {error}</div>;
-  if (!stats) return <div className="p-8 bg-yellow-100 text-yellow-900 text-xl font-bold rounded-lg mb-6 border-4 border-yellow-500">NO STATS DATA</div>;
+  if (isLoading) return <LoadingSkeleton />;
+  if (error)
+    return (
+      <div className="p-6 text-center text-sm text-red-500 dark:text-red-400 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 mb-6">
+        Unable to load team stats.
+      </div>
+    );
+  if (!stats)
+    return (
+      <div className="p-6 text-center text-sm text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 mb-6">
+        No stats available.
+      </div>
+    );
 
   return (
     <div className="space-y-6 mb-6">

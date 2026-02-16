@@ -182,6 +182,40 @@ function GameLogTable({
   const isRB = position === "RB" || position === "FB";
   const isReceiver = position === "WR" || position === "TE";
 
+  // Compute totals for the footer row
+  const totals = games.reduce(
+    (acc, g) => ({
+      completions: acc.completions + g.completions,
+      attempts: acc.attempts + g.attempts,
+      passingYards: acc.passingYards + g.passingYards,
+      passingTds: acc.passingTds + g.passingTds,
+      interceptions: acc.interceptions + g.interceptions,
+      carries: acc.carries + g.carries,
+      rushingYards: acc.rushingYards + g.rushingYards,
+      rushingTds: acc.rushingTds + g.rushingTds,
+      receptions: acc.receptions + g.receptions,
+      targets: acc.targets + g.targets,
+      receivingYards: acc.receivingYards + g.receivingYards,
+      receivingTds: acc.receivingTds + g.receivingTds,
+      totalEpa: acc.totalEpa + (g.totalEpa ?? 0),
+    }),
+    {
+      completions: 0,
+      attempts: 0,
+      passingYards: 0,
+      passingTds: 0,
+      interceptions: 0,
+      carries: 0,
+      rushingYards: 0,
+      rushingTds: 0,
+      receptions: 0,
+      targets: 0,
+      receivingYards: 0,
+      receivingTds: 0,
+      totalEpa: 0,
+    }
+  );
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -351,6 +385,75 @@ function GameLogTable({
             );
           })}
         </tbody>
+        <tfoot>
+          <tr className="border-t-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/40">
+            <td className="py-2.5 px-3 font-bold text-xs text-slate-900 dark:text-slate-100 sticky left-0 bg-slate-50 dark:bg-slate-700/40 z-10">
+              TOT
+            </td>
+            <td className="py-2.5 px-3" />
+            {isQB && (
+              <>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.completions}/{totals.attempts}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.passingYards.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.passingTds}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.interceptions}
+                </td>
+                <td className="py-2.5 px-3 text-right text-slate-400 dark:text-slate-500">
+                  —
+                </td>
+              </>
+            )}
+            {(isQB || isRB) && (
+              <>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.carries}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.rushingYards.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.rushingTds}
+                </td>
+              </>
+            )}
+            {(isRB || isReceiver) && (
+              <>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.receptions}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.targets}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.receivingYards.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.receivingTds}
+                </td>
+              </>
+            )}
+            {isReceiver && (
+              <>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.rushingYards.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100">
+                  {totals.rushingTds}
+                </td>
+              </>
+            )}
+            <td className={`py-2.5 px-3 text-right font-bold ${epaColor(totals.totalEpa)}`}>
+              {formatEpa(totals.totalEpa)}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
@@ -363,6 +466,9 @@ function SeasonSummaryCards({ player }: { player: PlayerDetail }) {
   const isQB = position === "QB";
   const isRB = position === "RB" || position === "FB";
   const isReceiver = position === "WR" || position === "TE";
+
+  // Compute total EPA from game log
+  const totalEpa = player.games.reduce((sum, g) => sum + (g.totalEpa ?? 0), 0);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -434,6 +540,9 @@ function SeasonSummaryCards({ player }: { player: PlayerDetail }) {
           <StatCard label="Rush TD" value={season.rushingTds} />
         </>
       )}
+
+      {/* Total EPA for all positions */}
+      <StatCard label="Total EPA" value={formatEpa(totalEpa)} />
     </div>
   );
 }

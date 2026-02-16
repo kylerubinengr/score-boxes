@@ -300,7 +300,7 @@ export function PerformancesTable({ performances }: PerformancesTableProps) {
       </div>
 
       <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
-        Showing {filtered.length} performances (min 5 plays, garbage time excluded). Click a row to view the game.
+        Showing {filtered.length} performances (min 5 plays). Click a row to view the game.
       </p>
     </div>
   );
