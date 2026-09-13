@@ -11,6 +11,8 @@ interface LiveGameHeaderProps {
 }
 
 export function LiveGameHeader({ homeTeam, awayTeam, homeScore, awayScore, clock }: LiveGameHeaderProps) {
+  const isFinal = clock === "Final";
+
   return (
     <header className="bg-white rounded-2xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800 overflow-hidden mb-4 sm:mb-6">
       <div className="flex flex-row justify-between items-center p-3 sm:p-4 md:p-6">
@@ -25,15 +27,23 @@ export function LiveGameHeader({ homeTeam, awayTeam, homeScore, awayScore, clock
             <div className="ml-auto md:ml-4 text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 flex-shrink-0">{awayScore}</div>
         </div>
 
-        {/* Center Live Status */}
+        {/* Center Status */}
         <div className="flex flex-col items-center justify-center px-2 sm:px-3 md:px-6 min-w-[80px] sm:min-w-[100px] md:min-w-[140px] flex-shrink-0">
-            <div className="flex items-center gap-1 sm:gap-1.5 text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-red-100 animate-pulse mb-1 sm:mb-2">
-                <Radio className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest">Live</span>
-            </div>
-            <div className="text-[10px] sm:text-xs md:text-sm font-black text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                {clock || "In Progress"}
-            </div>
+            {isFinal ? (
+              <div className="text-sm sm:text-base md:text-lg font-black px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 mb-1 sm:mb-2">
+                FINAL
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1 sm:gap-1.5 text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-red-100 animate-pulse mb-1 sm:mb-2">
+                    <Radio className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest">Live</span>
+                </div>
+                <div className="text-[10px] sm:text-xs md:text-sm font-black text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    {clock || "In Progress"}
+                </div>
+              </>
+            )}
         </div>
 
         {/* Home Team */}

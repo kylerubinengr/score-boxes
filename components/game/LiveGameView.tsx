@@ -35,7 +35,28 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
       {/* Status Indicator - Shows polling state to user */}
       <div className="flex justify-between items-center px-3 sm:px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {isPolling && isVisible && (
+          {currentStatus === 'post' ? (
+            <>
+              <div className="w-2 h-2 bg-slate-400 rounded-full" />
+              <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                Game finished<span className="hidden sm:inline"> - updates stopped</span>
+              </span>
+            </>
+          ) : hasError ? (
+            <>
+              <div className="w-2 h-2 bg-amber-500 rounded-full" />
+              <span className="text-[10px] sm:text-xs font-medium text-amber-600 dark:text-amber-500">
+                Connection issue<span className="hidden sm:inline"> - retrying in 30s</span>
+              </span>
+            </>
+          ) : !isVisible ? (
+            <>
+              <div className="w-2 h-2 bg-slate-400 rounded-full" />
+              <span className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500">
+                Updates paused<span className="hidden sm:inline"> (tab hidden)</span>
+              </span>
+            </>
+          ) : isPolling ? (
             <>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -46,31 +67,7 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
                 </span>
               </span>
             </>
-          )}
-          {!isVisible && (
-            <>
-              <div className="w-2 h-2 bg-slate-400 rounded-full" />
-              <span className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500">
-                Updates paused<span className="hidden sm:inline"> (tab hidden)</span>
-              </span>
-            </>
-          )}
-          {hasError && (
-            <>
-              <div className="w-2 h-2 bg-amber-500 rounded-full" />
-              <span className="text-[10px] sm:text-xs font-medium text-amber-600 dark:text-amber-500">
-                Connection issue<span className="hidden sm:inline"> - retrying in 30s</span>
-              </span>
-            </>
-          )}
-          {currentStatus === 'post' && (
-            <>
-              <div className="w-2 h-2 bg-slate-400 rounded-full" />
-              <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
-                Game finished<span className="hidden sm:inline"> - updates stopped</span>
-              </span>
-            </>
-          )}
+          ) : null}
         </div>
         {error && (
           <span className="text-xs text-red-600 dark:text-red-400">
