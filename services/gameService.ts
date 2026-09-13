@@ -348,7 +348,7 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
   const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${id}`;
 
   try {
-    const summaryRes = await fetch(summaryUrl);
+    const summaryRes = await fetch(summaryUrl, { cache: 'no-store' });
     if (!summaryRes.ok) {
       console.error(`Failed to fetch summary for game ${id}`);
       return undefined;

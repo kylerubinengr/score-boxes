@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getGameById, getGamesByWeek } from "@/services/gameService";
+import { getGameById } from "@/services/gameService";
 import { getMatchupComparison } from "@/services/matchupService";
 import { notFound } from "next/navigation";
 import { ScoringSummary } from "@/components/game/ScoringSummary";
@@ -10,6 +10,7 @@ import { BoxScoreSection } from "@/components/game/BoxScoreSection";
 import LiveGameView from "@/components/game/LiveGameView";
 
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -22,14 +23,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title, description };
 }
 
-export async function generateStaticParams() {
-  const weeks = Array.from({ length: 18 }, (_, i) => i + 1);
-  const results = await Promise.all(
-    weeks.map((week) => getGamesByWeek(week))
-  );
-  const flatGames = results.flatMap(r => r.games);
-  return flatGames.map((game) => ({ id: game.id }));
-}
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
