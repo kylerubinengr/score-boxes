@@ -159,6 +159,13 @@ export type PlayByPlay = {
         id: string;
         logo: string;
     };
+    homeScore?: number;
+    awayScore?: number;
+    endDown?: number;
+    endDistance?: number;
+    endYardsToEndzone?: number;
+    downDistanceText?: string;
+    possessionText?: string;
 };
 
 export type Drive = {

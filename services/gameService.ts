@@ -461,7 +461,12 @@ export async function getGameById(id: string, options: { fetchWeather?: boolean 
                     logo: d.team?.logos?.[0]?.href
                 },
                 homeScore: p.homeScore,
-                awayScore: p.awayScore
+                awayScore: p.awayScore,
+                endDown: p.end?.down > 0 ? p.end.down : undefined,
+                endDistance: p.end?.distance > 0 ? p.end.distance : undefined,
+                endYardsToEndzone: p.end?.yardsToEndzone > 0 ? p.end.yardsToEndzone : undefined,
+                downDistanceText: p.end?.downDistanceText || undefined,
+                possessionText: p.end?.possessionText || undefined,
             })) || []);
 
             // Plays are chronological from API. Last play has final score of drive.

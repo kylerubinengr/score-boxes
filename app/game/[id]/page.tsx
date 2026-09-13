@@ -88,6 +88,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
                     awayScore={game.awayScore || 0}
                     drives={game.drives}
                     comparison={matchupComparison}
+                    gameId={game.id}
                     season={game.season}
                     week={game.week}
                     seasonType={game.seasonType}

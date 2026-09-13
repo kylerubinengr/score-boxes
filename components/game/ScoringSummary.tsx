@@ -21,7 +21,7 @@ interface ScoringSummaryProps {
     drives?: Drive[];
     comparison?: MatchupComparison | null;
     isLive?: boolean;
-    // Win Probability props
+    gameId?: string;
     season?: number;
     week?: number;
     seasonType?: number;
@@ -157,6 +157,7 @@ export function ScoringSummary({
     drives,
     comparison,
     isLive,
+    gameId,
     season,
     week,
     seasonType
@@ -172,28 +173,59 @@ export function ScoringSummary({
 
     // Fetch Win Probability data when tab is selected
     useEffect(() => {
-        if (activeTab === 'wp' && !wpData && !wpLoading && season && week) {
-            setWpLoading(true);
-            setWpError(null);
+        if (activeTab !== 'wp') return;
+        if (!gameId && (!season || !week)) return;
 
+        let url: string;
+        if (isLive && gameId) {
+            const params = new URLSearchParams({ eventId: gameId });
+            url = `/api/win-probability?${params}`;
+        } else {
+            if (wpData) return;
             const params = new URLSearchParams({
-                season: season.toString(),
-                week: week.toString(),
+                season: season!.toString(),
+                week: week!.toString(),
                 seasonType: (seasonType || 2).toString(),
                 away: awayTeam.abbreviation,
                 home: homeTeam.abbreviation,
             });
+            url = `/api/win-probability?${params}`;
+        }
 
-            fetch(`/api/win-probability?${params}`)
+        let cancelled = false;
+
+        const fetchWp = () => {
+            setWpLoading(true);
+            setWpError(null);
+
+            fetch(url)
                 .then(res => {
                     if (!res.ok) throw new Error('Win probability data not available');
                     return res.json();
                 })
-                .then((data: WinProbabilityData) => setWpData(data))
-                .catch(err => setWpError(err.message))
-                .finally(() => setWpLoading(false));
+                .then((data: WinProbabilityData) => {
+                    if (!cancelled) setWpData(data);
+                })
+                .catch(err => {
+                    if (!cancelled) setWpError(err.message);
+                })
+                .finally(() => {
+                    if (!cancelled) setWpLoading(false);
+                });
+        };
+
+        fetchWp();
+
+        let interval: ReturnType<typeof setInterval> | undefined;
+        if (isLive) {
+            interval = setInterval(fetchWp, 30000);
         }
-    }, [activeTab, wpData, wpLoading, season, week, seasonType, awayTeam.abbreviation, homeTeam.abbreviation]);
+
+        return () => {
+            cancelled = true;
+            if (interval) clearInterval(interval);
+        };
+    }, [activeTab, isLive, gameId, season, week, seasonType, awayTeam.abbreviation, homeTeam.abbreviation]);
 
     // Track window width for mobile detection
     React.useEffect(() => {
@@ -282,7 +314,7 @@ export function ScoringSummary({
                     <span className="hidden sm:inline">Play by Play</span>
                     <span className="sm:hidden">Play by Play</span>
                 </button>
-                {season && week && (
+                {(gameId || (season && week)) && (
                     <button
                         onClick={() => setActiveTab('wp')}
                         className={`flex-1 py-2.5 sm:py-3 text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-wide sm:tracking-widest transition-colors ${activeTab === 'wp' ? 'bg-white text-blue-600 border-b-2 border-blue-600 dark:bg-slate-900 dark:text-blue-400' : 'text-slate-400 hover:bg-white hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-300'}`}

@@ -36,17 +36,117 @@ const resultCache = new Map<string, WinProbabilityData>();
 
 export const maxDuration = 60; // Allow up to 60s for streaming large CSV files
 
+async function fetchEspnWinProbability(eventId: string, homeAbbr: string, awayAbbr: string): Promise<WinProbabilityData | null> {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const wpEntries = data.winprobability;
+  if (!wpEntries || wpEntries.length === 0) return null;
+
+  const allPlays: Record<string, any> = {};
+  const drives = data.drives || {};
+  const driveList = [...(drives.previous || []), ...(drives.current ? [drives.current] : [])];
+  for (const drv of driveList) {
+    for (const p of (drv.plays || [])) {
+      allPlays[p.id] = { ...p, driveTeamAbbr: drv.team?.abbreviation };
+    }
+  }
+
+  const homeComp = data.header?.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home');
+  const awayComp = data.header?.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away');
+  const espnHomeAbbr = homeComp?.team?.abbreviation || homeAbbr;
+  const espnAwayAbbr = awayComp?.team?.abbreviation || awayAbbr;
+
+  const points: WinProbabilityPoint[] = [];
+  let prevQuarter = 0;
+  const quarterBreaks: number[] = [];
+
+  for (const entry of wpEntries) {
+    const play = allPlays[entry.playId];
+    if (!play) continue;
+
+    const quarter = play.period?.number || 1;
+    const clockStr = play.clock?.displayValue || '0:00';
+    const [min, sec] = clockStr.split(':').map(Number);
+    const clockSeconds = (min || 0) * 60 + (sec || 0);
+    const regulationSecondsPerQuarter = 900;
+    const quartersRemaining = Math.max(0, 4 - quarter);
+    const gameSecondsRemaining = quarter <= 4
+      ? quartersRemaining * regulationSecondsPerQuarter + clockSeconds
+      : clockSeconds - 600;
+
+    if (quarter !== prevQuarter) {
+      quarterBreaks.push(points.length);
+      prevQuarter = quarter;
+    }
+
+    const homeWp = entry.homeWinPercentage * 100;
+    const isTD = play.scoringType?.name === 'touchdown';
+    const isFG = play.scoringType?.name === 'field-goal' || play.type?.text === 'Field Goal Good';
+    const isScoring = isTD || isFG;
+
+    points.push({
+      playIndex: points.length,
+      wp: homeWp,
+      quarter,
+      gameSecondsRemaining,
+      description: play.text || play.shortText || '',
+      isScoring,
+      scoringType: isTD ? 'td' : isFG ? 'fg' : null,
+      scoringTeam: isScoring ? (play.driveTeamAbbr || null) : null,
+      posteam: play.driveTeamAbbr || espnHomeAbbr,
+      homeScore: play.homeScore ?? 0,
+      awayScore: play.awayScore ?? 0,
+    });
+  }
+
+  if (points.length === 0) return null;
+
+  for (let i = 1; i < points.length; i++) {
+    if (points[i].gameSecondsRemaining >= points[i - 1].gameSecondsRemaining) {
+      points[i].gameSecondsRemaining = points[i - 1].gameSecondsRemaining - 1;
+    }
+  }
+
+  const keyPlays = findKeyPlays(points, 5, espnHomeAbbr);
+
+  return {
+    gameId: eventId,
+    homeTeam: espnHomeAbbr,
+    awayTeam: espnAwayAbbr,
+    points,
+    quarterBreaks,
+    keyPlays,
+  };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const eventId = searchParams.get('eventId');
   const season = searchParams.get('season');
   const week = searchParams.get('week');
   const seasonType = searchParams.get('seasonType');
   const away = searchParams.get('away');
   const home = searchParams.get('home');
 
+  if (eventId) {
+    const result = await fetchEspnWinProbability(eventId, home || '', away || '');
+    if (!result) {
+      return NextResponse.json(
+        { error: 'Win probability data not available for this game' },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'no-cache, no-store' },
+    });
+  }
+
   if (!season || !week || !away || !home) {
     return NextResponse.json(
-      { error: 'season, week, away, and home query parameters are required' },
+      { error: 'season, week, away, and home query parameters are required (or eventId for live games)' },
       { status: 400 }
     );
   }

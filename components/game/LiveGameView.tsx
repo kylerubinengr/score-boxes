@@ -5,6 +5,7 @@ import { Game } from "@/types/nfl";
 import { refreshGameData } from "@/app/actions/gameActions";
 import { useAdaptivePolling } from "@/hooks/useAdaptivePolling";
 import { LiveGameHeader } from "./LiveGameHeader";
+import { LastPlayWidget } from "./LastPlayWidget";
 import { ScoringSummary } from "./ScoringSummary";
 import { BoxScoreSection } from "./BoxScoreSection";
 
@@ -76,7 +77,7 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
         )}
       </div>
 
-      <LiveGameHeader 
+      <LiveGameHeader
         homeTeam={game.homeTeam}
         awayTeam={game.awayTeam}
         homeScore={game.homeScore || 0}
@@ -84,8 +85,16 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
         clock={clockDisplay}
       />
 
+      {game.status === 'in' && game.drives?.[0] && (
+        <LastPlayWidget
+          drive={game.drives[0]}
+          homeTeam={game.homeTeam}
+          awayTeam={game.awayTeam}
+        />
+      )}
+
       {game.scoringPlays && game.linescores && (
-         <ScoringSummary 
+         <ScoringSummary
             homeTeam={game.homeTeam}
             awayTeam={game.awayTeam}
             scoringPlays={game.scoringPlays}
@@ -95,6 +104,10 @@ export default function LiveGameView({ initialGame }: LiveGameViewProps) {
             awayScore={game.awayScore || 0}
             drives={game.drives || []}
             isLive={game.status === 'in'}
+            gameId={game.id}
+            season={game.season}
+            week={game.week}
+            seasonType={game.seasonType}
          />
       )}
 
